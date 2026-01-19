@@ -9,7 +9,9 @@ Mary Toni L. -
 Lawrence S. - 
 
 PREREQUISITES (Install these first!)
-Before you start, make sure you have these installed:
+Before you start, make sure you have these installed: HUWAG KA MA-OVERWHELM, BAKA NAGAWA MO NA MOSTLY NANDITO like yung XAMPP ganon.
+
+GOODLUCK!
 
 XAMPP or Laragon (includes PHP and MySQL)
 Composer (download from getcomposer.org)
