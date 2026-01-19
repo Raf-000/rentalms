@@ -8,6 +8,7 @@ A web-based rental management system for boarding houses built with Laravel.
 - Mary Toni L. - 
 - Lawrence S. - 
 
+MAY NEED LANG ISET UP KONTE, BAKA NAGAWA MO NA MOSTLY NANDITO, GOODLUCK!!
 ## Prerequisites
 Before you start, make sure you have these installed:
 - XAMPP or Laragon (includes PHP and MySQL)
