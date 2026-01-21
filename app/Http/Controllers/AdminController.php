@@ -72,6 +72,24 @@ class AdminController extends Controller
         return view('admin.view-tenants', compact('tenants'));
     }
 
+    public function deleteTenant($tenantId)
+    {
+        $tenant = User::findOrFail($tenantId);
+        
+        // Free up the bedspace if assigned
+        if ($tenant->bedspace) {
+            $bedspace = Bedspace::find($tenant->bedspace->unitID);
+            $bedspace->tenantID = null;
+            $bedspace->status = 'available';
+            $bedspace->save();
+        }
+        
+        // Delete the tenant (bills, payments, maintenance will be kept for records)
+        $tenant->delete();
+        
+        return redirect()->route('admin.view-tenants')->with('success', 'Tenant deleted successfully');
+    }
+
     public function showIssueBill()
     {
         $tenants = User::where('role', 'tenant')->with('bedspace')->get();
@@ -94,6 +112,12 @@ class AdminController extends Controller
         ]);
 
         return redirect()->route('admin.issue-bill')->with('success', 'Bill issued successfully!');
+    }
+
+    public function getTenantBills($tenantId)
+    {
+        $bills = Bill::where('tenantID', $tenantId)->get();
+        return response()->json($bills);
     }
 
     public function viewPayments()
@@ -120,6 +144,27 @@ class AdminController extends Controller
         $bill->save();
         
         return redirect()->route('admin.view-payments')->with('success', 'Payment verified successfully!');
+    }
+
+    public function rejectPayment(Request $request, $paymentID)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:500'
+        ]);
+
+        $payment = Payment::findOrFail($paymentID);
+        
+        $payment->rejectedBy = auth()->id();
+        $payment->rejectedAt = now();
+        $payment->rejectionReason = $request->reason;
+        $payment->save();
+        
+        // Update bill status to rejected
+        $bill = Bill::find($payment->billID);
+        $bill->status = 'rejected';
+        $bill->save();
+        
+        return redirect()->route('admin.view-payments')->with('success', 'Payment rejected successfully');
     }
 
     public function viewMaintenanceRequests()

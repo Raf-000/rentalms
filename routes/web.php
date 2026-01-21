@@ -60,6 +60,9 @@ Route::post('/tenant/create-maintenance', [App\Http\Controllers\TenantController
 Route::get('/tenant/view-maintenance', [App\Http\Controllers\TenantController::class, 'viewMaintenance'])
     ->middleware(['auth'])->name('tenant.view-maintenance');
 
+Route::post('/tenant/complete-maintenance/{requestID}', [App\Http\Controllers\TenantController::class, 'completeMaintenance'])
+    ->middleware(['auth'])->name('tenant.complete-maintenance');
+
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

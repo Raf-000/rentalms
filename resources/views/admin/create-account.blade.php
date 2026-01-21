@@ -1,175 +1,206 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Create New Account
-        </h2>
-    </x-slot>
+@extends('layouts.admin-layout')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+@section('content')
+<div class="content-header">
+    <h1>Create New Account</h1>
+    <p>Add new admin or tenant accounts</p>
+</div>
 
-                    <form method="POST" action="{{ route('admin.store-account') }}">
-                        @csrf
+<div class="card" style="max-width: 600px;">
+    <form method="POST" action="{{ route('admin.store-account') }}">
+        @csrf
 
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Name</label>
-                            <input type="text" name="name" required 
-                                   class="w-full border-gray-300 rounded-md shadow-sm">
-                            @error('name')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Name</label>
+            <input type="text" name="name" required 
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            @error('name')
+                <p style="color: red; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
+            @enderror
+        </div>
 
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Email</label>
-                            <input type="email" name="email" required 
-                                   class="w-full border-gray-300 rounded-md shadow-sm">
-                            @error('email')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Email</label>
+            <input type="email" name="email" required 
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            @error('email')
+                <p style="color: red; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
+            @enderror
+        </div>
 
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Password</label>
-                            <input type="password" name="password" required 
-                                   class="w-full border-gray-300 rounded-md shadow-sm">
-                            @error('password')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Password</label>
+            <input type="password" name="password" required 
+                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            @error('password')
+                <p style="color: red; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
+            @enderror
+        </div>
 
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium mb-2">Account Type</label>
-                            <select name="role" id="role" required 
-                                    class="w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="">Select Role</option>
-                                <option value="admin">Admin</option>
-                                <option value="tenant">Tenant</option>
-                            </select>
-                            @error('role')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Account Type</label>
+            <select name="role" id="role" required 
+                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">Select Role</option>
+                <option value="admin">Admin</option>
+                <option value="tenant">Tenant</option>
+            </select>
+            @error('role')
+                <p style="color: red; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
+            @enderror
+        </div>
 
-                        <div class="mb-4" id="bedspace-section" style="display: none;">
-                            <label class="block text-sm font-medium mb-2">Assign Bedspace (Optional)</label>
-                            <select name="bedspace_id" id="bedspace_id" class="w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="">No bedspace assigned</option>
-                                @foreach($bedspaces as $bedspace)
-                                    <option value="{{ $bedspace->unitID }}">
-                                        {{ $bedspace->unitCode }} - ₱{{ number_format($bedspace->price, 2) }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+        <div id="bedspace-section" style="display: none; margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Assign Bedspace (Optional)</label>
+            <select name="bedspace_id" id="bedspace_id" 
+                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">No bedspace assigned</option>
+                @foreach($bedspaces as $bedspace)
+                    <option value="{{ $bedspace->unitID }}">
+                        {{ $bedspace->unitCode }} - ₱{{ number_format($bedspace->price, 2) }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
 
-                        <div id="lease-section" style="display: none;">
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium mb-2">Lease Start Date</label>
-                                <input type="date" name="leaseStart" 
-                                       class="w-full border-gray-300 rounded-md shadow-sm">
-                                @error('leaseStart')
-                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+        <div id="lease-section" style="display: none;">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Lease Start Date</label>
+                <input type="date" name="leaseStart" 
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                @error('leaseStart')
+                    <p style="color: red; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
+                @enderror
+            </div>
 
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium mb-2">Lease End Date</label>
-                                <input type="date" name="leaseEnd" 
-                                       class="w-full border-gray-300 rounded-md shadow-sm">
-                                @error('leaseEnd')
-                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="flex gap-4">
-                            <button type="submit" 
-                                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                Create Account
-                            </button>
-                            <a href="{{ route('admin.dashboard') }}" 
-                               class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
-                                Back to Dashboard
-                            </a>
-                        </div>
-                    </form>
-                </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500;">Lease End Date</label>
+                <input type="date" name="leaseEnd" 
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                @error('leaseEnd')
+                    <p style="color: red; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
+                @enderror
             </div>
         </div>
-    </div>
 
-    <!-- Success Popup Modal -->
-    @if(session('success') && session('user'))
-    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
-            <div class="text-center mb-6">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                    <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
+        <button type="submit" 
+                style="padding: 10px 25px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px;">
+            Create Account
+        </button>
+    </form>
+</div>
+
+<!-- Success Notification Popup (Top notification style) -->
+@if(session('success') && session('user'))
+<div id="successNotification" style="position: fixed; top: 80px; right: 30px; z-index: 1000; animation: slideIn 0.3s ease-out;">
+    <div style="background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); max-width: 400px; border-left: 4px solid #28a745;">
+        <div style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; background-color: #d4edda; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: #28a745; font-size: 18px;">✓</span>
+                    </div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #333; margin: 0;">Account Created!</h3>
                 </div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Account Created Successfully!</h3>
-                <p class="text-sm text-gray-600">Here are the login credentials:</p>
+                <button onclick="closeNotification()" style="background: none; border: none; font-size: 20px; color: #999; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
             </div>
-
-            <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
-                <div class="mb-3">
-                    <p class="text-xs text-gray-500 mb-1">Name</p>
-                    <p class="font-medium text-gray-900">{{ session('user')['name'] }}</p>
+            
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 12px;">
+                <div style="margin-bottom: 10px;">
+                    <p style="font-size: 11px; color: #666; margin: 0 0 3px 0;">Name</p>
+                    <p style="font-size: 14px; font-weight: 500; color: #333; margin: 0;">{{ session('user')['name'] }}</p>
                 </div>
-                <div class="mb-3">
-                    <p class="text-xs text-gray-500 mb-1">Email (Username)</p>
-                    <p class="font-medium text-gray-900">{{ session('user')['email'] }}</p>
+                <div style="margin-bottom: 10px;">
+                    <p style="font-size: 11px; color: #666; margin: 0 0 3px 0;">Email (Username)</p>
+                    <p style="font-size: 14px; font-weight: 500; color: #333; margin: 0;">{{ session('user')['email'] }}</p>
                 </div>
-                <div class="mb-3">
-                    <p class="text-xs text-gray-500 mb-1">Password</p>
-                    <p class="font-medium text-gray-900">{{ session('user')['password'] }}</p>
+                <div style="margin-bottom: 10px;">
+                    <p style="font-size: 11px; color: #666; margin: 0 0 3px 0;">Password</p>
+                    <p style="font-size: 14px; font-weight: 500; color: #333; margin: 0;">{{ session('user')['password'] }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-gray-500 mb-1">Role</p>
-                    <p class="font-medium text-gray-900">{{ session('user')['role'] }}</p>
+                    <p style="font-size: 11px; color: #666; margin: 0 0 3px 0;">Role</p>
+                    <p style="font-size: 14px; font-weight: 500; color: #333; margin: 0;">{{ session('user')['role'] }}</p>
                 </div>
             </div>
 
-            <p class="text-xs text-gray-500 text-center mb-4">
-                Screenshot this information and send to the user
+            <p style="font-size: 12px; color: #666; text-align: center; margin: 0 0 12px 0;">
+                Screenshot and send to the user
             </p>
 
-            <button onclick="closeModal()" 
-                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+            <button onclick="closeNotification()" 
+                    style="width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
                 Close
             </button>
         </div>
     </div>
-    @endif
+</div>
 
-    <script>
-        // Show bedspace and lease sections only when Tenant is selected
-        document.getElementById('role').addEventListener('change', function() {
-            const bedspaceSection = document.getElementById('bedspace-section');
-            if (this.value === 'tenant') {
-                bedspaceSection.style.display = 'block';
-            } else {
-                bedspaceSection.style.display = 'none';
-                document.getElementById('lease-section').style.display = 'none';
-            }
-        });
-
-        // Show lease dates when a bedspace is selected
-        document.getElementById('bedspace_id').addEventListener('change', function() {
-            const leaseSection = document.getElementById('lease-section');
-            if (this.value) {
-                leaseSection.style.display = 'block';
-            } else {
-                leaseSection.style.display = 'none';
-            }
-        });
-
-        function closeModal() {
-            document.getElementById('successModal').style.display = 'none';
+<style>
+    @keyframes slideIn {
+        from {
+            transform: translateX(400px);
+            opacity: 0;
         }
-    </script>
-</x-app-layout>
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+</style>
+
+<script>
+    // Auto close after 20 seconds
+    setTimeout(function() {
+        closeNotification();
+    }, 20000);
+
+    function closeNotification() {
+        var notification = document.getElementById('successNotification');
+        if (notification) {
+            notification.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(function() {
+                notification.style.display = 'none';
+            }, 300);
+        }
+    }
+</script>
+
+<style>
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(400px);
+            opacity: 0;
+        }
+    }
+</style>
+@endif
+
+<script>
+    // Show bedspace and lease sections only when Tenant is selected
+    document.getElementById('role').addEventListener('change', function() {
+        const bedspaceSection = document.getElementById('bedspace-section');
+        if (this.value === 'tenant') {
+            bedspaceSection.style.display = 'block';
+        } else {
+            bedspaceSection.style.display = 'none';
+            document.getElementById('lease-section').style.display = 'none';
+        }
+    });
+
+    // Show lease dates when a bedspace is selected
+    document.getElementById('bedspace_id').addEventListener('change', function() {
+        const leaseSection = document.getElementById('lease-section');
+        if (this.value) {
+            leaseSection.style.display = 'block';
+        } else {
+            leaseSection.style.display = 'none';
+        }
+    });
+</script>
+
+@endsection
