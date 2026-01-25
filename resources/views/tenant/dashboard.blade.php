@@ -1,99 +1,117 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Tenant Dashboard
-        </h2>
-    </x-slot>
+@extends('layouts.tenant-layout')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            
-            <!-- Bedspace Information Card -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4">My Bedspace Information</h3>
-                    
-                    @if($bedspace)
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-sm text-gray-600">Unit Code</p>
-                                <p class="font-medium text-lg">{{ $bedspace->unitCode }}</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Monthly Rent</p>
-                                <p class="font-medium text-lg text-blue-600">₱{{ number_format($bedspace->price, 2) }}</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">House & Floor</p>
-                                <p class="font-medium">House {{ $bedspace->houseNo }}, Floor {{ $bedspace->floor }}</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Room</p>
-                                <p class="font-medium">Room {{ $bedspace->roomNo }}, Bed #{{ $bedspace->bedspaceNo }}</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Restriction</p>
-                                <p class="font-medium">{{ ucfirst($bedspace->restriction) }} only</p>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-600">Status</p>
-                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">
-                                    {{ ucfirst($bedspace->status) }}
-                                </span>
-                            </div>
-                        </div>
+@section('content')
+<div class="content-header">
+    <h1>Welcome Back!</h1>
+    <p>Here's an overview of your rental information</p>
+</div>
 
-                        @if($tenant->leaseStart && $tenant->leaseEnd)
-                            <div class="mt-4 pt-4 border-t">
-                                <p class="text-sm text-gray-600">Lease Period</p>
-                                <p class="font-medium">
-                                    {{ date('M d, Y', strtotime($tenant->leaseStart)) }} - 
-                                    {{ date('M d, Y', strtotime($tenant->leaseEnd)) }}
-                                </p>
-                            </div>
-                        @endif
-                    @else
-                        <div class="text-center py-8">
-                            <p class="text-gray-500">No bedspace assigned yet.</p>
-                            <p class="text-sm text-gray-400 mt-2">Please contact the admin for bedspace assignment.</p>
-                        </div>
-                    @endif
-                </div>
-            </div>
+@php
+    $tenant = Auth::user();
+    $bedspace = $tenant->bedspace;
+    
+    // Calculate unpaid due
+    $unpaidDue = \App\Models\Bill::where('tenantID', $tenant->id)
+        ->whereIn('status', ['pending', 'paid'])
+        ->sum('amount');
+    
+    // Calculate days left before lease end
+    $daysLeft = $tenant->leaseEnd ? 
+        now()->diffInDays(\Carbon\Carbon::parse($tenant->leaseEnd), false) : 
+        null;
+    
+    // Get open maintenance requests count
+    $openRequests = \App\Models\MaintenanceRequest::where('tenantID', $tenant->id)
+        ->whereIn('status', ['pending', 'scheduled'])
+        ->count();
+    
+    // Get next bill for payment reminder
+    $nextBill = \App\Models\Bill::where('tenantID', $tenant->id)
+        ->where('status', 'pending')
+        ->orderBy('dueDate', 'asc')
+        ->first();
+@endphp
 
-            <!-- Quick Actions Menu -->
-            <div class="mb-4">
-                <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
-            </div>
+<!-- Quick Stats -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
+    <div class="card" style="border-left: 4px solid #dc3545;">
+        <p style="font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">UNPAID DUE</p>
+        <p style="font-size: 32px; font-weight: bold; color: #dc3545;">₱{{ number_format($unpaidDue, 2) }}</p>
+    </div>
+    
+    <div class="card" style="border-left: 4px solid {{ $daysLeft !== null ? ($daysLeft > 30 ? '#28a745' : ($daysLeft > 0 ? '#ffc107' : '#dc3545')) : '#6c757d' }};">
+        <p style="font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">DAYS LEFT</p>
+        @if($daysLeft !== null)
+            @if($daysLeft > 0)
+                <p style="font-size: 32px; font-weight: bold; color: #333;">{{ $daysLeft }} <span style="font-size: 16px; color: #999;">days</span></p>
+            @else
+                <p style="font-size: 24px; font-weight: bold; color: #dc3545;">Lease Expired</p>
+            @endif
+        @else
+            <p style="font-size: 24px; font-weight: bold; color: #999;">Not Set</p>
+        @endif
+        <p style="font-size: 11px; color: #999; margin-top: 3px;">Before lease ends</p>
+    </div>
+    
+    <div class="card" style="border-left: 4px solid #007bff;">
+        <p style="font-size: 12px; color: #666; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">OPEN REQUESTS</p>
+        <p style="font-size: 32px; font-weight: bold; color: #333;">{{ $openRequests }}</p>
+        <p style="font-size: 11px; color: #999; margin-top: 3px;">Maintenance issues</p>
+    </div>
+</div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <!-- View Bills Card -->
-                <a href="{{ route('tenant.view-bills') }}" 
-                   class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-blue-500">
-                    <div class="flex items-center mb-2">
-                        <svg class="w-6 h-6 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <h4 class="font-semibold text-lg">My Bills</h4>
-                    </div>
-                    <p class="text-sm text-gray-600">View and pay your bills</p>
-                </a>
-
-                <!-- Maintenance Requests Card -->
-                <a href="{{ route('tenant.view-maintenance') }}" 
-                   class="block bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-red-500">
-                    <div class="flex items-center mb-2">
-                        <svg class="w-6 h-6 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        <h4 class="font-semibold text-lg">Maintenance</h4>
-                    </div>
-                    <p class="text-sm text-gray-600">Report and track maintenance issues</p>
-                </a>
-
-            </div>
+<!-- Bedspace Details -->
+@if($bedspace)
+<div class="card">
+    <h3 style="margin-bottom: 15px; font-size: 18px;">My Bedspace Details</h3>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+        <div>
+            <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Unit Code</p>
+            <p style="font-size: 16px; font-weight: 500;">{{ $bedspace->unitCode }}</p>
+        </div>
+        <div>
+            <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Monthly Rent</p>
+            <p style="font-size: 16px; font-weight: 500; color: #007bff;">₱{{ number_format($bedspace->price, 2) }}</p>
+        </div>
+        <div>
+            <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Restriction</p>
+            <p style="font-size: 16px; font-weight: 500;">{{ ucfirst($bedspace->restriction) }} only</p>
+        </div>
+        <div>
+            <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Status</p>
+            <span style="background-color: #d4edda; color: #155724; padding: 4px 10px; border-radius: 4px; font-size: 13px; font-weight: 500;">
+                {{ ucfirst($bedspace->status) }}
+            </span>
         </div>
     </div>
-</x-app-layout>
+    
+    @if($tenant->leaseStart && $tenant->leaseEnd)
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+            <p style="font-size: 12px; color: #666; margin-bottom: 5px;">Lease Period</p>
+            <p style="font-size: 16px; font-weight: 500;">
+                {{ date('M d, Y', strtotime($tenant->leaseStart)) }} - 
+                {{ date('M d, Y', strtotime($tenant->leaseEnd)) }}
+            </p>
+        </div>
+    @endif
+</div>
+@endif
+
+<!-- Next Payment Due -->
+@if($nextBill)
+<div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <p style="font-size: 13px; opacity: 0.9; margin-bottom: 5px;">NEXT PAYMENT DUE</p>
+            <p style="font-size: 28px; font-weight: bold; margin-bottom: 5px;">{{ date('M d, Y', strtotime($nextBill->dueDate)) }}</p>
+            <p style="font-size: 20px; font-weight: 600;">₱{{ number_format($nextBill->amount, 2) }}</p>
+        </div>
+        <a href="{{ route('tenant.view-bills') }}" 
+           style="padding: 12px 25px; background: white; color: #667eea; text-decoration: none; border-radius: 6px; font-weight: 500;">
+            Pay Now
+        </a>
+    </div>
+</div>
+@endif
+
+@endsection
