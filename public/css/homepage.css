@@ -98,8 +98,8 @@ body {
    ============================================ */
 .hero {
     position: relative;
-    height: 90vh;
-    background-image: url('../images/hero-bg.jpg');
+    height: 86vh;
+    background-image: url('../images/bh_hero.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
