@@ -4,187 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Rental Management</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-        }
-
-        /* Header */
-        .header {
-            background-color: white;
-            border-bottom: 1px solid #ddd;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            height: 60px;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            text-decoration: none;
-        }
-
-        .header-right {
-            position: relative;
-        }
-
-        .user-menu {
-            cursor: pointer;
-            padding: 8px 15px;
-            background-color: #f0f0f0;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .user-menu:hover {
-            background-color: #e0e0e0;
-        }
-
-        .dropdown {
-            display: none;
-            position: absolute;
-            right: 0;
-            top: 45px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            min-width: 150px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .dropdown.show {
-            display: block;
-        }
-
-        .dropdown a, .dropdown button {
-            display: block;
-            padding: 10px 15px;
-            text-decoration: none;
-            color: #333;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .dropdown a:hover, .dropdown button:hover {
-            background-color: #f5f5f5;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 60px;
-            bottom: 0;
-            width: 250px;
-            background-color: white;
-            border-right: 1px solid #ddd;
-            overflow-y: auto;
-            padding: 20px 0;
-        }
-
-        .sidebar-nav {
-            list-style: none;
-        }
-
-        .sidebar-nav li {
-            margin-bottom: 5px;
-        }
-
-        .sidebar-nav a {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 25px;
-            text-decoration: none;
-            color: #555;
-            transition: all 0.2s;
-        }
-
-        .sidebar-nav a:hover {
-            background-color: #f5f5f5;
-            color: #007bff;
-        }
-
-        .sidebar-nav a.active {
-            background-color: #e3f2fd;
-            color: #007bff;
-            border-right: 3px solid #007bff;
-        }
-
-        .nav-icon {
-            width: 20px;
-            height: 20px;
-        }
-
-        /* Main Content */
-        .main-content {
-            margin-left: 250px;
-            margin-top: 60px;
-            padding: 30px;
-            min-height: calc(100vh - 60px);
-        }
-
-        .content-header {
-            margin-bottom: 25px;
-        }
-
-        .content-header h1 {
-            font-size: 28px;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .content-header p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        /* Utility Classes */
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('css/admin-layout.css') }}">
 </head>
 <body>
     <!-- Header -->
     <div class="header">
         <div class="header-left">
-            <a href="{{ route('admin.dashboard') }}" class="logo">BOARDING HOMES</a>
+            <a href="{{ route('admin.dashboard') }}" class="logo">
+                <!-- img src="{{ asset('images/logo.png') }}" alt="Boarding Homes Logo" class="logo-image" -->
+                <span class="logo-text">BoardingHomes.</span>
+            </a>
         </div>
         <div class="header-right">
             <div class="user-menu" onclick="toggleDropdown()">
                 <span>{{ Auth::user()->name }}</span>
-                <span>▼</span>
+                <span class="dropdown-arrow">▼</span>
             </div>
             <div id="userDropdown" class="dropdown">
                 <a href="{{ route('profile.edit') }}">Edit Profile</a>
@@ -256,20 +90,6 @@
         @yield('content')
     </div>
 
-    <script>
-        function toggleDropdown() {
-            document.getElementById('userDropdown').classList.toggle('show');
-        }
-
-        // Close dropdown when clicking outside
-        window.onclick = function(event) {
-            if (!event.target.closest('.user-menu')) {
-                var dropdown = document.getElementById('userDropdown');
-                if (dropdown.classList.contains('show')) {
-                    dropdown.classList.remove('show');
-                }
-            }
-        }
-    </script>
+    <script src="{{ asset('js/admin-layout.js') }}"></script>
 </body>
 </html>
