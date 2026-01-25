@@ -280,7 +280,7 @@ function deleteTenant() {
     // Create form and submit
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = `/admin/delete-tenant/${selectedTenantId}`;
+    form.action = /admin/delete-tenant/${selectedTenantId};
     
     const csrfInput = document.createElement('input');
     csrfInput.type = 'hidden';
