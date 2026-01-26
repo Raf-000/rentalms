@@ -2,18 +2,33 @@
    TENANT MAINTENANCE - AJAX FUNCTIONALITY
    ============================================ */
 
+let currentRequestID = null;
+
+// Show confirmation modal
+function showConfirmModal(requestID) {
+    currentRequestID = requestID;
+    const modal = document.getElementById('confirmModal');
+    modal.classList.add('show');
+}
+
+// Close confirmation modal
+function closeConfirmModal() {
+    const modal = document.getElementById('confirmModal');
+    modal.classList.remove('show');
+    currentRequestID = null;
+}
+
 // Complete maintenance request via AJAX
-function completeMaintenanceAjax(requestID) {
-    if (!confirm('Are you sure the issue has been fixed?')) {
-        return;
-    }
+function completeMaintenanceAjax() {
+    if (!currentRequestID) return;
     
-    const btn = event.target.closest('.btn-complete');
-    const btnText = btn.querySelector('.btn-text');
-    const btnLoading = btn.querySelector('.btn-loading');
+    const requestID = currentRequestID;
+    const confirmBtn = document.getElementById('confirmCompleteBtn');
+    const btnText = confirmBtn.querySelector('.btn-text');
+    const btnLoading = confirmBtn.querySelector('.btn-loading');
     
     // Show loading
-    btn.disabled = true;
+    confirmBtn.disabled = true;
     btnText.style.display = 'none';
     btnLoading.style.display = 'inline-flex';
     
@@ -33,6 +48,7 @@ function completeMaintenanceAjax(requestID) {
             // Update card background
             const card = document.getElementById(`request-card-${requestID}`);
             card.style.backgroundColor = '#f0f9f4';
+            card.style.borderLeft = '4px solid #28a745';
             
             // Update status badge
             const statusBadge = document.getElementById(`status-badge-${requestID}`);
@@ -42,8 +58,11 @@ function completeMaintenanceAjax(requestID) {
             // Update status message
             const statusMessage = document.getElementById(`status-message-${requestID}`);
             statusMessage.innerHTML = `
-                <p style="font-size: 13px; color: #155724; background-color: #d4edda; padding: 8px 12px; border-radius: 4px; margin: 0;">
-                    ✓ Issue resolved and completed
+                <p style="font-size: 13px; color: #155724; background-color: #d4edda; padding: 10px 15px; border-radius: 6px; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Issue resolved and completed
                 </p>
             `;
             
@@ -54,21 +73,22 @@ function completeMaintenanceAjax(requestID) {
                 completeBtn.remove();
             }
             
+            // Close modal
+            closeConfirmModal();
+            
             // Show success notification
             showNotification('success', data.message);
         } else {
             showNotification('error', data.message);
-            // Reset button
-            btn.disabled = false;
-            btnText.style.display = 'inline';
-            btnLoading.style.display = 'none';
         }
     })
     .catch(error => {
         console.error('Error:', error);
         showNotification('error', 'Network error. Please try again.');
+    })
+    .finally(() => {
         // Reset button
-        btn.disabled = false;
+        confirmBtn.disabled = false;
         btnText.style.display = 'inline';
         btnLoading.style.display = 'none';
     });
@@ -99,3 +119,15 @@ function showNotification(type, message) {
         notification.remove();
     }, 5000);
 }
+
+// Close modal on outside click
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('confirmModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeConfirmModal();
+            }
+        });
+    }
+});

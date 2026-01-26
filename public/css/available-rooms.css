@@ -10,7 +10,7 @@ body {
 .simple-header {
     background-color: #E2E8E7;
     padding: 20px 30px;
-    margin-bottom: 20px;
+    margin-bottom: 0;
 }
 
 .back-btn {
@@ -33,14 +33,15 @@ body {
 .main-content {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 30px;
+    padding: 0 30px;
 }
 
 .page-title {
     font-size: 36px;
     font-weight: bold;
-    color: #333;
+    color: #135757;
     margin-bottom: 30px;
+    padding-left: 5px;
     text-align: left;
 }
 
@@ -62,7 +63,7 @@ body {
 }
 
 .house-title {
-    font-size: 22px;
+    font-size: 42px;
     font-weight: bold;
     color: #135757;
     margin-bottom: 25px;
@@ -155,11 +156,11 @@ body {
 
 .rooms-grid:not(.single-room) .beds-grid {
     grid-template-columns: repeat(3, 1fr);
+    padding-left: 20px;
 }
 
 .bed-icon {
-    width: 48px;
-    height: 48px;
+    font-size: 48px;
     stroke-width: 1.5;
     transition: all 0.3s;
 }

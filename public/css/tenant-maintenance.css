@@ -29,13 +29,14 @@
 
 /* Buttons */
 .btn-complete {
-    padding: 8px 16px;
+    padding: 10px 18px;
     background-color: #28a745;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
+    white-space: nowrap;
     transition: all 0.3s;
 }
 
@@ -68,6 +69,130 @@
     display: inline-flex;
     align-items: center;
     gap: 8px;
+}
+
+/* Confirmation Modal */
+.confirm-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-modal.show {
+    display: flex;
+}
+
+.confirm-modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.confirm-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.confirm-modal-icon {
+    width: 50px;
+    height: 50px;
+    background-color: #fff3cd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.confirm-modal-icon svg {
+    width: 28px;
+    height: 28px;
+    color: #856404;
+}
+
+.confirm-modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.confirm-modal-body {
+    margin-bottom: 25px;
+}
+
+.confirm-modal-text {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btn-cancel {
+    padding: 10px 24px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+.btn-confirm {
+    padding: 10px 24px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-confirm:hover {
+    background-color: #218838;
+}
+
+.btn-confirm:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* Notification */

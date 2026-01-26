@@ -109,11 +109,8 @@
                         @endif
                         
                         @if($req->status === 'scheduled')
-                            <button onclick="completeMaintenanceAjax({{ $req->requestID }})" class="btn-complete">
-                                <span class="btn-text">Mark as Completed</span>
-                                <span class="btn-loading" style="display: none;">
-                                    <span class="loading-spinner"></span> Processing...
-                                </span>
+                            <button onclick="showConfirmModal({{ $req->requestID }})" class="btn-complete">
+                                Mark as Completed
                             </button>
                         @endif
                     </div>
@@ -130,6 +127,34 @@
             <p style="font-size: 14px; margin: 10px 0 0 0; color: #666;">Report an issue using the form above</p>
         </div>
     @endif
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="confirm-modal">
+    <div class="confirm-modal-content">
+        <div class="confirm-modal-header">
+            <div class="confirm-modal-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 class="confirm-modal-title">Confirm Completion</h3>
+        </div>
+        
+        <div class="confirm-modal-body">
+            <p class="confirm-modal-text">Are you sure the maintenance issue has been completely fixed? This action will mark the request as completed.</p>
+        </div>
+        
+        <div class="confirm-modal-actions">
+            <button onclick="closeConfirmModal()" class="btn-cancel">Cancel</button>
+            <button id="confirmCompleteBtn" onclick="completeMaintenanceAjax()" class="btn-confirm">
+                <span class="btn-text">Yes, Mark as Completed</span>
+                <span class="btn-loading" style="display: none;">
+                    <span class="loading-spinner"></span> Processing...
+                </span>
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Photo Viewer Modal -->
