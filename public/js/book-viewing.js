@@ -61,15 +61,11 @@ function handleFormSubmit(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Show success message
-            showSuccessMessage(data.message);
+            // Store success message in sessionStorage
+            sessionStorage.setItem('bookingSuccess', data.message);
             
-            // Reset form
-            form.reset();
-            filterBedspaces(); // Reset room dropdown
-            
-            // Scroll to top to see message
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Redirect to available rooms
+            window.location.href = data.redirect;
         } else {
             // Show validation errors
             if (data.errors) {
@@ -77,35 +73,20 @@ function handleFormSubmit(e) {
             } else {
                 showErrorMessage(data.message || 'An error occurred');
             }
+            
+            // Reset button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Submit Booking Request';
         }
     })
     .catch(error => {
         console.error('Error:', error);
         showErrorMessage('Network error. Please try again.');
-    })
-    .finally(() => {
+        
         // Reset button
         submitBtn.disabled = false;
         submitBtn.innerHTML = 'Submit Booking Request';
     });
-}
-
-// Show success message
-function showSuccessMessage(message) {
-    const existingMsg = document.querySelector('.success-message');
-    if (existingMsg) existingMsg.remove();
-    
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'success-message';
-    msgDiv.innerHTML = `
-        <svg class="success-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        ${message}
-    `;
-    
-    const formContainer = document.querySelector('.form-container');
-    formContainer.insertBefore(msgDiv, formContainer.querySelector('.booking-form'));
 }
 
 // Show error message

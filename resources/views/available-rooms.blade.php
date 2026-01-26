@@ -196,3 +196,7 @@
     </div>
 </div>
 @endsection
+
+@section('scripts')
+<script src="{{ asset('js/available-room.js') }}"></script>
+@endsection

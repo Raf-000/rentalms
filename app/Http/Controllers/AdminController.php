@@ -12,6 +12,97 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
+    public function dashboard()
+    {
+        // Total Stats
+        $totalTenants = \App\Models\User::where('userType', 'tenant')->count();
+        $totalBedspaces = \App\Models\Bedspace::count();
+        $occupiedBedspaces = \App\Models\Bedspace::where('status', 'occupied')->count();
+        $availableBedspaces = \App\Models\Bedspace::where('status', 'available')->count();
+        
+        // Revenue Stats
+        $currentMonth = now()->format('F Y');
+        $verifiedPaymentsThisMonth = \App\Models\Payment::with('bill')
+            ->whereNotNull('verifiedAt')
+            ->whereYear('verifiedAt', now()->year)
+            ->whereMonth('verifiedAt', now()->month)
+            ->get()
+            ->sum(function($payment) {
+                return $payment->bill->amount;
+            });
+        
+        $pendingPayments = \App\Models\Payment::with('bill')
+            ->whereNull('verifiedBy')
+            ->whereNull('rejectedBy')
+            ->get()
+            ->sum(function($payment) {
+                return $payment->bill->amount;
+            });
+        
+        $outstandingBills = \App\Models\Bill::where('status', 'pending')->sum('amount');
+        
+        // Maintenance Stats
+        $pendingMaintenance = \App\Models\MaintenanceRequest::where('status', 'pending')->count();
+        $scheduledMaintenance = \App\Models\MaintenanceRequest::where('status', 'scheduled')->count();
+        $completedMaintenance = \App\Models\MaintenanceRequest::where('status', 'completed')->count();
+        
+        // Recent Activity
+        $recentPayments = \App\Models\Payment::with(['tenant', 'bill'])
+            ->whereNotNull('verifiedAt')
+            ->orderBy('verifiedAt', 'desc')
+            ->take(5)
+            ->get();
+        
+        $recentMaintenance = \App\Models\MaintenanceRequest::with('tenant')
+            ->where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+        
+        // Pending Viewing Bookings
+        $pendingBookings = \App\Models\ViewingBooking::where('status', 'pending')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+        
+        // Revenue Chart Data (Last 6 Months)
+        $revenueChartData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = now()->subMonths($i);
+            $revenue = \App\Models\Payment::with('bill')
+                ->whereNotNull('verifiedAt')
+                ->whereYear('verifiedAt', $month->year)
+                ->whereMonth('verifiedAt', $month->month)
+                ->get()
+                ->sum(function($payment) {
+                    return $payment->bill->amount;
+                });
+            
+            $revenueChartData[] = [
+                'month' => $month->format('M Y'),
+                'revenue' => $revenue
+            ];
+        }
+        
+        return view('admin.dashboard', compact(
+            'totalTenants',
+            'totalBedspaces',
+            'occupiedBedspaces',
+            'availableBedspaces',
+            'currentMonth',
+            'verifiedPaymentsThisMonth',
+            'pendingPayments',
+            'outstandingBills',
+            'pendingMaintenance',
+            'scheduledMaintenance',
+            'completedMaintenance',
+            'recentPayments',
+            'recentMaintenance',
+            'pendingBookings',
+            'revenueChartData'
+        ));
+    }
+
     // Show the create account form
     public function showCreateAccount()
     {

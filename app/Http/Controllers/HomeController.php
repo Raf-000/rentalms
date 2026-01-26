@@ -91,7 +91,8 @@ class HomeController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Booking request submitted successfully! We will contact you soon.'
+                'message' => 'Booking request submitted successfully! We will contact you soon.',
+                'redirect' => route('available-rooms')
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {

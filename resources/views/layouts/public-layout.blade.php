@@ -70,5 +70,6 @@
     </footer>
 
     @yield('extra-js')
+    @yield('scripts')
 </body>
 </html> 
