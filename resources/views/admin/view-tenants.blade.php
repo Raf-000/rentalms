@@ -1,296 +1,425 @@
 @extends('layouts.admin-layout')
 
 @section('content')
+<!-- Link external CSS -->
+<link rel="stylesheet" href="{{ asset('css/tenants.css') }}">
+
 <div class="content-header">
-    <h1>All Tenants</h1>
-    <p>Manage and view all tenant information</p>
+    <div class="header-content">
+        <h1>Tenants</h1>
+        <p>Information Overview and Management</p>
+    </div>
 </div>
 
 <div class="card">
-    <!-- Filters and Search -->
-    <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
-        <div>
-            <label style="display: block; margin-bottom: 5px; font-size: 13px; color: #666;">Filter by Status:</label>
-            <select id="statusFilter" onchange="filterTable()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
-                <option value="all">All Statuses</option>
-                <option value="paid">Paid</option>
-                <option value="unpaid">Unpaid Balance</option>
-            </select>
+    <!-- Header with filters and search -->
+    <div class="card-header">
+        <div class="header-row">
+            <div class="header-info">
+                <h2 class="card-title">All Tenants</h2>
+                <span class="tenant-count">{{ $tenants->count() }} tenant{{ $tenants->count() !== 1 ? 's' : '' }}</span>
+            </div>
+            
+            <div class="header-actions">
+                <div class="filter-group">
+                    <select id="statusFilter" onchange="filterTable()" class="filter-select">
+                        <option value="all">All Status</option>
+                        <option value="paid">Paid</option>
+                        <option value="unpaid">Unpaid only</option>
+                    </select>
+                </div>
+                
+                <div class="search-group">
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by name..." class="search-input">
+                    </div>
+                </div>
+            </div>
         </div>
         
-        <div style="flex: 1;">
-            <label style="display: block; margin-bottom: 5px; font-size: 13px; color: #666;">Search by Name:</label>
-            <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Type tenant name..." 
-                   style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+        <!-- Mobile filters -->
+        <div class="mobile-filters">
+            <div class="filter-group mobile">
+                <select id="statusFilterMobile" onchange="filterTable()" class="filter-select">
+                    <option value="all">All Status</option>
+                    <option value="paid">Paid</option>
+                    <option value="unpaid">Unpaid</option>
+                </select>
+            </div>
         </div>
     </div>
 
     <!-- Tenants Table -->
     @if($tenants->count() > 0)
-        <div style="overflow-x: auto;">
-            <table id="tenantsTable" style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                <thead style="background-color: #f5f5f5;">
-                    <tr>
-                        <th style="padding: 12px 10px; text-align: left; border-bottom: 2px solid #ddd; font-weight: 600;">Name</th>
-                        <th style="padding: 12px 10px; text-align: left; border-bottom: 2px solid #ddd; font-weight: 600;">Email</th>
-                        <th style="padding: 12px 10px; text-align: left; border-bottom: 2px solid #ddd; font-weight: 600;">Phone</th>
-                        <th style="padding: 12px 10px; text-align: left; border-bottom: 2px solid #ddd; font-weight: 600;">Bedspace</th>
-                        <th style="padding: 12px 10px; text-align: left; border-bottom: 2px solid #ddd; font-weight: 600;">Monthly Rent</th>
-                        <th style="padding: 12px 10px; text-align: left; border-bottom: 2px solid #ddd; font-weight: 600;">Lease Period</th>
-                        <th style="padding: 12px 10px; text-align: left; border-bottom: 2px solid #ddd; font-weight: 600;">Status</th>
-                        <th style="padding: 12px 10px; text-align: left; border-bottom: 2px solid #ddd; font-weight: 600;">Total Balance</th>
-                        <th style="padding: 12px 10px; text-align: center; border-bottom: 2px solid #ddd; font-weight: 600;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($tenants as $tenant)
-                    @php
-                        // Calculate unpaid bills (pending + paid but not verified)
-                        $unpaidBills = \App\Models\Bill::where('tenantID', $tenant->id)
-                            ->whereIn('status', ['pending', 'paid'])
-                            ->get();
-                        $totalBalance = $unpaidBills->sum('amount');
-                        $paymentStatus = $totalBalance > 0 ? 'unpaid' : 'paid';
-                    @endphp
-                    <tr class="tenant-row" 
-                        data-name="{{ strtolower($tenant->name) }}" 
-                        data-status="{{ $paymentStatus }}"
-                        data-tenant-id="{{ $tenant->id }}">
-                        <td style="padding: 12px 10px; border-bottom: 1px solid #eee;">{{ $tenant->name }}</td>
-                        <td style="padding: 12px 10px; border-bottom: 1px solid #eee;">{{ $tenant->email }}</td>
-                        <td style="padding: 12px 10px; border-bottom: 1px solid #eee;">{{ $tenant->phone ?? 'N/A' }}</td>
-                        <td style="padding: 12px 10px; border-bottom: 1px solid #eee;">
-                            @if($tenant->bedspace)
-                                <span style="color: #007bff; font-weight: 500;">{{ $tenant->bedspace->unitCode }}</span>
-                            @else
-                                <span style="color: #999;">Not assigned</span>
-                            @endif
-                        </td>
-                        <td style="padding: 12px 10px; border-bottom: 1px solid #eee;">
-                            @if($tenant->bedspace)
-                                ₱{{ number_format($tenant->bedspace->price, 2) }}
-                            @else
-                                <span style="color: #999;">-</span>
-                            @endif
-                        </td>
-                        <td style="padding: 12px 10px; border-bottom: 1px solid #eee;">
-                            @if($tenant->leaseStart && $tenant->leaseEnd)
-                                {{ date('M d, Y', strtotime($tenant->leaseStart)) }} - {{ date('M d, Y', strtotime($tenant->leaseEnd)) }}
-                            @else
-                                <span style="color: #999;">Not set</span>
-                            @endif
-                        </td>
-                        <td style="padding: 12px 10px; border-bottom: 1px solid #eee;">
-                            @if($totalBalance > 0)
-                                <span style="background-color: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Unpaid Balance</span>
-                            @else
-                                <span style="background-color: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Paid</span>
-                            @endif
-                        </td>
-                        <td style="padding: 12px 10px; border-bottom: 1px solid #eee; font-weight: 500;">
-                            @if($totalBalance > 0)
-                                <span style="color: #dc3545;">₱{{ number_format($totalBalance, 2) }}</span>
-                            @else
-                                <span style="color: #28a745;">₱0.00</span>
-                            @endif
-                        </td>
-                        <td style="padding: 12px 10px; border-bottom: 1px solid #eee; text-align: center;">
-                            <button onclick="viewTenant({{ $tenant->id }})" 
-                                    style="padding: 5px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 5px;">
-                                View
-                            </button>
-                            <button onclick="confirmDelete({{ $tenant->id }}, '{{ $tenant->name }}')" 
-                                    style="padding: 5px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
-                    
-                    <!-- Hidden data for modal -->
-                    <script>
-                        if (!window.tenantsData) window.tenantsData = {};
-                        window.tenantsData[{{ $tenant->id }}] = {
-                            name: "{{ $tenant->name }}",
-                            email: "{{ $tenant->email }}",
-                            phone: "{{ $tenant->phone ?? 'Not provided' }}",
-                            bedspace: "{{ $tenant->bedspace ? $tenant->bedspace->unitCode : 'Not assigned' }}",
-                            bills: [
-                                @foreach($unpaidBills as $bill)
-                                {
-                                    amount: {{ $bill->amount }},
-                                    status: "{{ $bill->status }}",
-                                    dueDate: "{{ date('M d, Y', strtotime($bill->dueDate)) }}"
-                                },
-                                @endforeach
-                            ]
-                        };
-                    </script>
-                    @endforeach
-                </tbody>
-            </table>
+        <div class="table-container">
+            <div class="table-responsive">
+                <table id="tenantsTable" class="tenants-table">
+                    <thead>
+                        <tr>
+                            <th class="tenant-name">
+                                <span>TENANT</span>
+                            </th>
+                            <th class="tenant-contact">
+                                <span>CONTACT</span>
+                            </th>
+                            <th class="tenant-bedspace">
+                                <span>BEDSPACE</span>
+                            </th>
+                            <th class="tenant-lease">
+                                <span>LEASE PERIOD</span>
+                            </th>
+                            <th class="tenant-balance">
+                                <span>BALANCE</span>
+                            </th>
+                            <th class="tenant-status">
+                                <span>STATUS</span>
+                            </th>
+                            <th class="tenant-actions">
+                                <span>ACTION</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($tenants as $tenant)
+                        @php
+                            $unpaidBills = \App\Models\Bill::where('tenantID', $tenant->id)
+                                ->whereIn('status', ['pending', 'unpaid'])
+                                ->get();
+                            $totalBalance = $unpaidBills->sum('amount');
+                            $paymentStatus = $totalBalance > 0 ? 'unpaid' : 'paid';
+                            $hasOverdue = $unpaidBills->where('dueDate', '<', now())->count() > 0;
+                        @endphp
+                        <tr class="tenant-row {{ $hasOverdue ? 'has-overdue' : '' }}" 
+                            data-name="{{ strtolower($tenant->name) }}" 
+                            data-status="{{ $paymentStatus }}"
+                            data-tenant-id="{{ $tenant->id }}"
+                            data-overdue="{{ $hasOverdue ? 'true' : 'false' }}">
+                            <td class="tenant-name">
+                                <div class="tenant-info">
+                                    <div class="tenant-avatar">
+                                        {{ substr($tenant->name, 0, 1) }}
+                                    </div>
+                                    <div>
+                                        <div class="tenant-name-text"><strong>{{ $tenant->name }}</strong></div>
+                                        <div class="tenant-email">{{ $tenant->email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="tenant-contact">
+                                <div class="contact-info">
+                                    <div class="phone-number">
+                                        {{ $tenant->phone ?? 'Not provided' }}
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="tenant-bedspace">
+                                @if($tenant->bedspace)
+                                    <div class="bedspace-info">
+                                        <span class="bedspace-code"><strong>{{ $tenant->bedspace->unitCode }}</strong></span>
+                                        <span class="bedspace-price">{{ number_format($tenant->bedspace->price, 2) }}/mo</span>
+                                    </div>
+                                @else
+                                    <span class="not-assigned">Not assigned</span>
+                                @endif
+                            </td>
+                            <td class="tenant-lease">
+                                @if($tenant->leaseStart && $tenant->leaseEnd)
+                                    <div class="lease-period">
+                                        <div class="lease-start">
+                                            {{ date('M d, Y', strtotime($tenant->leaseStart)) }}
+                                        </div>
+                                        <div class="lease-end">
+                                            to {{ date('M d, Y', strtotime($tenant->leaseEnd)) }}
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="not-set">Not set</span>
+                                @endif
+                            </td>
+                            <td class="tenant-balance">
+                                @if($totalBalance > 0)
+                                    <div class="balance-amount negative">
+                                        {{ number_format($totalBalance, 2) }}
+                                    </div>
+                                @else
+                                    <div class="balance-amount positive">
+                                        0.00
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="tenant-status">
+                                @if($totalBalance > 0)
+                                    <div class="status-badge {{ $hasOverdue ? 'overdue' : 'unpaid' }}">
+                                        <span class="badge-dot"></span>
+                                        {{ $hasOverdue ? 'Overdue' : 'Unpaid' }}
+                                    </div>
+                                @else
+                                    <div class="status-badge paid">
+                                        <span class="badge-dot"></span>
+                                        Paid
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="tenant-actions">
+                                <div class="action-buttons">
+                                    <button onclick="viewTenant({{ $tenant->id }}, '{{ addslashes($tenant->name) }}', '{{ $tenant->email }}', '{{ $tenant->phone ?? 'Not provided' }}', '{{ $tenant->leaseStart ? date('M d, Y', strtotime($tenant->leaseStart)) : 'Not set' }}', '{{ $tenant->leaseEnd ? date('M d, Y', strtotime($tenant->leaseEnd)) : 'Not set' }}', '{{ $tenant->bedspace ? $tenant->bedspace->unitCode : 'Not assigned' }}', {{ $tenant->bedspace ? $tenant->bedspace->price : 0 }}, {{ $totalBalance }})" 
+                                        class="btn btn-icon view-btn" 
+                                        title="View details">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Table Summary -->
+            <div class="table-summary">
+                <div class="summary-item">
+                    <span class="summary-label">Total Tenants:</span>
+                    <span class="summary-value">{{ $tenants->count() }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">With Balance:</span>
+                    <span class="summary-value">
+                        @php
+                            $withBalanceCount = 0;
+                            foreach($tenants as $tenant) {
+                                $balance = \App\Models\Bill::where('tenantID', $tenant->id)
+                                    ->whereIn('status', ['pending', 'unpaid'])
+                                    ->sum('amount');
+                                if ($balance > 0) {
+                                    $withBalanceCount++;
+                                }
+                            }
+                            echo $withBalanceCount;
+                        @endphp
+                    </span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Paid Up:</span>
+                    <span class="summary-value">
+                        @php
+                            $paidUpCount = 0;
+                            foreach($tenants as $tenant) {
+                                $balance = \App\Models\Bill::where('tenantID', $tenant->id)
+                                    ->whereIn('status', ['pending', 'unpaid'])
+                                    ->sum('amount');
+                                if ($balance == 0) {
+                                    $paidUpCount++;
+                                }
+                            }
+                            echo $paidUpCount;
+                        @endphp
+                    </span>
+                </div>
+            </div>
         </div>
     @else
-        <p style="color: #666; text-align: center; padding: 40px 0;">No tenants found.</p>
+        <div class="empty-state">
+            <div class="empty-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            <h3>No tenants found</h3>
+            <p>There are no tenants in the system yet.</p>
+        </div>
     @endif
 </div>
 
-<!-- View Tenant Modal -->
-<div id="viewModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 8px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
-        <div style="padding: 25px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px;">
-                <h2 style="margin: 0; font-size: 20px;">Tenant Details</h2>
-                <button onclick="closeViewModal()" style="background: none; border: none; font-size: 24px; color: #999; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
+<!-- MODAL -->
+<div id="tenantModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" id="modalContent">
+        <div id="viewMode" class="modal-view">
+            <div class="modal-header">
+                <h2>Tenant Information</h2>
+                <button onclick="closeModal()" class="modal-close">&times;</button>
             </div>
-            
-            <div id="tenantDetails"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div id="deleteModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 8px; max-width: 450px; width: 90%; padding: 30px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div style="width: 50px; height: 50px; background-color: #fee; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
-                <span style="color: #dc3545; font-size: 24px;">⚠</span>
+            <div class="modal-body">
+                <div id="tenantDetails"></div>
             </div>
-            <h3 style="margin: 0 0 10px 0; font-size: 18px;">Delete Tenant Account</h3>
-            <p style="color: #666; margin: 0; font-size: 14px;">Are you sure you want to permanently delete <strong id="deleteTenantName"></strong>? This action cannot be undone and will:</p>
-            <ul style="text-align: left; color: #666; font-size: 13px; margin: 15px 0;">
-                <li>Remove the tenant from the system</li>
-                <li>Free up their assigned bedspace</li>
-                <li>Keep their billing records for archive</li>
-            </ul>
-        </div>
-        
-        <div style="display: flex; gap: 10px;">
-            <button onclick="closeDeleteModal()" 
-                    style="flex: 1; padding: 10px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Cancel
-            </button>
-            <button onclick="deleteTenant()" 
-                    style="flex: 1; padding: 10px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Delete Tenant
-            </button>
         </div>
     </div>
 </div>
 
 <script>
-// Initialize if not exists
-if (!window.tenantsData) window.tenantsData = {};
-let selectedTenantId = null;
-
-// Filter table
-function filterTable() {
-    const statusFilter = document.getElementById('statusFilter').value;
-    const searchInput = document.getElementById('searchInput').value.toLowerCase();
-    const rows = document.querySelectorAll('.tenant-row');
-    
-    rows.forEach(row => {
-        const name = row.getAttribute('data-name');
-        const status = row.getAttribute('data-status');
-        
-        const matchesStatus = statusFilter === 'all' || status === statusFilter;
-        const matchesSearch = name.includes(searchInput);
-        
-        row.style.display = (matchesStatus && matchesSearch) ? '' : 'none';
-    });
+// Modal control functions
+function openModal() {
+    document.getElementById('tenantModal').style.display = 'flex';
+    setTimeout(() => {
+        document.getElementById('tenantModal').classList.add('active');
+    }, 10);
 }
 
-// View tenant details
-function viewTenant(tenantId) {
-    console.log('View clicked for tenant:', tenantId);
-    console.log('Tenants data:', window.tenantsData);
+function closeModal() {
+    document.getElementById('tenantModal').classList.remove('active');
+    setTimeout(() => {
+        document.getElementById('tenantModal').style.display = 'none';
+    }, 300);
+}
+
+// View tenant details - PASSING DATA DIRECTLY IN FUNCTION CALL
+function viewTenant(tenantId, name, email, phone, leaseStart, leaseEnd, bedspaceCode, bedspacePrice, totalBalance) {
+    console.log('Viewing tenant:', tenantId, name);
     
-    const tenant = window.tenantsData[tenantId];
-    if (!tenant) {
-        console.error('Tenant not found:', tenantId);
-        alert('Error loading tenant data');
-        return;
-    }
-    
-    let billsHtml = '';
-    if (tenant.bills && tenant.bills.length > 0) {
-        billsHtml = '<ul style="list-style: none; padding: 0; margin: 0;">';
-        tenant.bills.forEach(bill => {
-            const statusColor = bill.status === 'paid' ? '#007bff' : '#ffc107';
-            billsHtml += `
-                <li style="padding: 10px; background-color: #f8f9fa; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span style="font-weight: 500;">₱${parseFloat(bill.amount).toFixed(2)}</span>
-                        <span style="font-size: 12px; color: #666; margin-left: 10px;">Due: ${bill.dueDate}</span>
-                    </div>
-                    <span style="background-color: ${statusColor}; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px;">${bill.status.toUpperCase()}</span>
-                </li>
-            `;
-        });
-        billsHtml += '</ul>';
-    } else {
-        billsHtml = '<p style="color: #28a745; font-size: 14px; background-color: #d4edda; padding: 10px; border-radius: 4px; text-align: center;">✓ No unpaid bills</p>';
-    }
-    
+    // Simple modal content
     const detailsHtml = `
-        <div style="margin-bottom: 20px;">
-            <p style="font-size: 12px; color: #666; margin: 0 0 5px 0;">Name</p>
-            <p style="font-size: 16px; font-weight: 500; margin: 0;">${tenant.name}</p>
+        <div class="tenant-profile">
+            <div class="profile-avatar">
+                ${name.charAt(0).toUpperCase()}
+            </div>
+            <div class="profile-info">
+                <h3>${name}</h3>
+                <p>${email}</p>
+            </div>
         </div>
-        <div style="margin-bottom: 20px;">
-            <p style="font-size: 12px; color: #666; margin: 0 0 5px 0;">Email</p>
-            <p style="font-size: 16px; margin: 0;">${tenant.email}</p>
-        </div>
-        <div style="margin-bottom: 20px;">
-            <p style="font-size: 12px; color: #666; margin: 0 0 5px 0;">Phone</p>
-            <p style="font-size: 16px; margin: 0;">${tenant.phone}</p>
-        </div>
-        <div style="margin-bottom: 20px;">
-            <p style="font-size: 12px; color: #666; margin: 0 0 5px 0;">Bedspace Unit</p>
-            <p style="font-size: 16px; font-weight: 500; color: #007bff; margin: 0;">${tenant.bedspace}</p>
-        </div>
-        <div style="border-top: 1px solid #e0e0e0; padding-top: 15px; margin-top: 20px;">
-            <p style="font-size: 14px; font-weight: 500; margin: 0 0 10px 0;">Pending/Unpaid Bills</p>
-            ${billsHtml}
+        
+        <div class="details-grid">
+            <div class="detail-card">
+                <div class="detail-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="detail-label">Phone</p>
+                    <p class="detail-value">${phone}</p>
+                </div>
+            </div>
+            
+            <div class="detail-card">
+                <div class="detail-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
+                <div>
+                    <p class="detail-label">Bedspace</p>
+                    <p class="detail-value primary">${bedspaceCode}</p>
+                    <p class="detail-subtext">${parseFloat(bedspacePrice).toFixed(2)}/month</p>
+                </div>
+            </div>
+            
+            <div class="detail-card">
+                <div class="detail-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </div>
+                <div>
+                    <p class="detail-label">Lease Period</p>
+                    <p class="detail-value">${leaseStart}</p>
+                    <p class="detail-subtext">to ${leaseEnd}</p>
+                </div>
+            </div>
+            
+            <div class="detail-card">
+                <div class="detail-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="detail-label">Total Balance</p>
+                    <p class="detail-value ${parseFloat(totalBalance) > 0 ? 'text-danger' : 'text-success'}">${parseFloat(totalBalance).toFixed(2)}</p>
+                </div>
+            </div>
         </div>
     `;
     
     document.getElementById('tenantDetails').innerHTML = detailsHtml;
-    document.getElementById('viewModal').style.display = 'flex';
+    openModal();
 }
 
-function closeViewModal() {
-    document.getElementById('viewModal').style.display = 'none';
+// Sync mobile and desktop filters
+document.getElementById('statusFilter')?.addEventListener('change', function() {
+    const mobileFilter = document.getElementById('statusFilterMobile');
+    if (mobileFilter) mobileFilter.value = this.value;
+    filterTable();
+});
+
+document.getElementById('statusFilterMobile')?.addEventListener('change', function() {
+    const desktopFilter = document.getElementById('statusFilter');
+    if (desktopFilter) desktopFilter.value = this.value;
+    filterTable();
+});
+
+// Filter table with debounce
+let filterTimeout;
+function filterTable() {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(() => {
+        const statusFilter = document.getElementById('statusFilter')?.value || 
+                           document.getElementById('statusFilterMobile')?.value || 'all';
+        const searchInput = document.getElementById('searchInput')?.value.toLowerCase() || '';
+        const rows = document.querySelectorAll('.tenant-row');
+        
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const name = row.getAttribute('data-name');
+            const status = row.getAttribute('data-status');
+            
+            let matchesStatus = true;
+            if (statusFilter === 'paid') {
+                matchesStatus = status === 'paid';
+            } else if (statusFilter === 'unpaid') {
+                matchesStatus = status === 'unpaid';
+            }
+            
+            const matchesSearch = name.includes(searchInput);
+            const shouldShow = matchesStatus && matchesSearch;
+            
+            row.style.display = shouldShow ? '' : 'none';
+            if (shouldShow) visibleCount++;
+        });
+        
+        updateVisibleCount(visibleCount);
+    }, 300);
 }
 
-// Delete tenant
-function confirmDelete(tenantId, tenantName) {
-    selectedTenantId = tenantId;
-    document.getElementById('deleteTenantName').textContent = tenantName;
-    document.getElementById('deleteModal').style.display = 'flex';
+function updateVisibleCount(count) {
+    const countElement = document.querySelector('.tenant-count');
+    if (countElement) {
+        countElement.textContent = `${count} tenant${count !== 1 ? 's' : ''}`;
+    }
 }
 
-function closeDeleteModal() {
-    document.getElementById('deleteModal').style.display = 'none';
-    selectedTenantId = null;
-}
+// Close modals on ESC key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
 
-function deleteTenant() {
-    if (!selectedTenantId) return;
-    
-    // Create form and submit
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = /admin/delete-tenant/${selectedTenantId};
-    
-    const csrfInput = document.createElement('input');
-    csrfInput.type = 'hidden';
-    csrfInput.name = '_token';
-    csrfInput.value = '{{ csrf_token() }}';
-    
-    form.appendChild(csrfInput);
-    document.body.appendChild(form);
-    form.submit();
-}
+// Close modal when clicking outside
+document.getElementById('tenantModal').addEventListener('click', (e) => {
+    if (e.target.id === 'tenantModal') {
+        closeModal();
+    }
+});
+
+// Initialize filter on page load
+document.addEventListener('DOMContentLoaded', function() {
+    filterTable();
+});
 </script>
 
 @endsection
