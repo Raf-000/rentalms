@@ -1,0 +1,254 @@
+/* Layout */
+.layout {
+    display: flex;
+    gap: 30px;
+    align-items: stretch;
+}
+
+/* LEFT COLUMN */
+.left-column {
+    width: 280px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Stats Cards */
+.stat-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.stat-card.pending {
+    border-left: 4px solid #ffc107;
+}
+
+.stat-card.scheduled {
+    border-left: 4px solid #007bff;
+}
+
+.stat-card.completed {
+    border-left: 4px solid #28a745;
+}
+
+.stat-number {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Requests Column */
+.requests {
+    flex: 1;
+    background: #fff;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.requests-header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.requests-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+/* Request Card */
+.request-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 15px;
+}
+
+.request-card.pending {
+    background: #fffbf0;
+}
+
+.request-card.scheduled {
+    background: #f0f7ff;
+}
+
+.request-card.completed {
+    background: #f0f9f4;
+}
+
+.description {
+    margin: 10px 0;
+}
+
+/* Buttons */
+.btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn.view {
+    background: #6c757d;
+    color: #fff;
+}
+
+.btn.update {
+    background: #007bff;
+    color: #fff;
+}
+
+/* Update Form */
+.update-form {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+}
+
+/* Modal */
+.image-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-box {
+    position: relative;
+}
+
+.image-box img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 8px;
+}
+
+.close-btn {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: #fff;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* Empty State */
+.empty {
+    text-align: center;
+    color: #999;
+}
+
+/* Completed Maintenance Placeholder (Right Column) */
+.completed-placeholder {
+    flex: 1;
+    background: #dff0d8;
+    border-radius: 12px;
+    padding: 20px;
+    padding-bottom: 20px;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-right: 100px; 
+}
+
+.completed-placeholder-header {
+    background: #9bd36a;
+    color: #1f4d1f;
+    font-weight: 600;
+    padding: 16px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* Header */
+.content-header h1 {
+    margin: 0;
+}
+
+.content-header p {
+    color: #666;
+}
+
+/* Alerts */
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    padding: 12px 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border-left: 4px solid #28a745;
+}
+.requests {
+    flex: 1;
+    background: #fff;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-height: calc(100vh - 300px); /* Add this - limits height */
+    overflow: hidden; /* Add this - prevents container scroll */
+}
+
+.requests-header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0; /* Add this - keeps header fixed */
+}
+
+.requests-body {
+    padding: 20px;
+    overflow-y: auto; /* Change to auto for scrolling */
+    flex: 1; /* Add this - takes remaining space */
+}
+
+/* Optional: Add scrollbar styling */
+.requests-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.requests-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.requests-body::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.requests-body::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+.right-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; 
+}
+
+.completed-placeholder {
+    background: #dff0d8;
+    border-radius: 12px;
+    padding: 20px;
+    flex-shrink: 0;
+    max-width: 600px;
+    margin-bottom: 20px; 
+}

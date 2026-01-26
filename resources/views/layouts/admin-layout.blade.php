@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Rental Management</title>
     <link rel="stylesheet" href="{{ asset('css/admin-layout.css') }}">
+    
+    {{-- ADD THIS LINE - This is where @push('styles') content goes --}}
+    @stack('styles')
 </head>
 <body>
     <!-- Header -->
@@ -91,5 +94,8 @@
     </div>
 
     <script src="{{ asset('js/admin-layout.js') }}"></script>
+    
+    {{-- ADD THIS LINE - This is where @push('scripts') content goes --}}
+    @stack('scripts')
 </body>
 </html>
