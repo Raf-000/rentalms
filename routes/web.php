@@ -90,10 +90,13 @@ Route::middleware(['auth'])->prefix('tenant')->name('tenant.')->group(function (
     // Maintenance Requests
     Route::get('/create-maintenance', [App\Http\Controllers\TenantController::class, 'showCreateMaintenance'])
         ->name('create-maintenance');
+        
     Route::post('/create-maintenance', [App\Http\Controllers\TenantController::class, 'createMaintenance'])
         ->name('store-maintenance');
+
     Route::get('/view-maintenance', [App\Http\Controllers\TenantController::class, 'viewMaintenance'])
         ->name('view-maintenance');
+        
     Route::post('/complete-maintenance/{requestID}', [App\Http\Controllers\TenantController::class, 'completeMaintenance'])
         ->name('complete-maintenance');
 

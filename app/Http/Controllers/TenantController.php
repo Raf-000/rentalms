@@ -142,31 +142,25 @@ class TenantController extends Controller
         return view('tenant.view-maintenance', compact('requests'));
     }
 
+    // Old method (for fallback)
     public function completeMaintenance($requestID)
     {
-        $request = MaintenanceRequest::findOrFail($requestID);
-        
-        // Make sure it belongs to the logged-in tenant
-        if ($request->tenantID !== Auth::id()) {
-            abort(403);
-        }
-        
-        // Only allow completion if status is 'scheduled'
-        if ($request->status === 'scheduled') {
-            $request->status = 'completed';
-            $request->save();
-            
-            return redirect()->route('tenant.view-maintenance')->with('success', 'Issue marked as completed!');
-        }
-        
-        return redirect()->route('tenant.view-maintenance')->with('error', 'Cannot complete this request.');
+        $request = MaintenanceRequest::where('requestID', $requestID)
+            ->where('tenantID', Auth::id())
+            ->firstOrFail();
+
+        $request->update(['status' => 'completed']);
+
+        return redirect()->route('tenant.view-maintenance')
+            ->with('success', 'Maintenance request marked as completed!');
     }
 
+    // New AJAX method
     public function completeMaintenanceAjax($requestID)
     {
         try {
-            $request = \App\Models\MaintenanceRequest::where('requestID', $requestID)
-                ->where('tenantID', auth()->id())
+            $request = MaintenanceRequest::where('requestID', $requestID)
+                ->where('tenantID', Auth::id())
                 ->firstOrFail();
 
             if ($request->status === 'completed') {
@@ -176,9 +170,7 @@ class TenantController extends Controller
                 ], 400);
             }
 
-            $request->update([
-                'status' => 'completed'
-            ]);
+            $request->update(['status' => 'completed']);
 
             return response()->json([
                 'success' => true,

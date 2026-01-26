@@ -36,6 +36,48 @@ body {
 }
 
 /* ============================================
+   RESPONSIVE FIXES
+   ============================================ */
+/** contact-bar to contact-icon **/
+
+.contact-bar {
+    flex-wrap: nowrap;       /* force one line */
+    white-space: nowrap;     /* prevent text wrapping */
+}
+
+.contact-bar span {
+    font-size: clamp(10px, 2vw, 14px); /* shrink text dynamically */
+    overflow: hidden;
+    text-overflow: ellipsis; /* optional: cut off if too long */
+}
+
+/* Mobile-specific tweaks */
+@media (max-width: 600px) {
+    .contact-bar {
+        gap: 20px; /* reduce spacing so text fits */
+        padding: 8px 12px; /* tighter padding */
+    }
+
+    .contact-bar span {
+        font-size: clamp(10px, 3vw, 14px); /* shrink more aggressively */
+    }
+}
+
+
+/* ============================================ 
+RESPONSIVE OVERRIDES 
+============================================ */ 
+    .contact-bar { 
+        flex-wrap: nowrap; /* NEW */ 
+        white-space: nowrap; /* NEW */ 
+} 
+    .contact-bar span { 
+        font-size: clamp(12px, 1.5vw, 16px); 
+        overflow: hidden; 
+        text-overflow: ellipsis; 
+}
+
+/* ============================================
    HEADER NAVIGATION (STICKY)
    ============================================ */
 .header {

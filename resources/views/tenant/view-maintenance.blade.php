@@ -10,33 +10,27 @@
     <p>Report and track maintenance issues</p>
 </div>
 
-@if(session('success'))
-    <div style="background-color: #d4edda; color: #155724; padding: 12px 20px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #28a745;">
-        {{ session('success') }}
-    </div>
-@endif
-
 <!-- Report New Issue Card -->
-<div class="card" style="margin-bottom: 30px; border-left: 4px solid #007bff;">
+<div class="card" style="margin-bottom: 30px; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #007bff;">
     <h3 style="margin-bottom: 20px; font-size: 18px; color: #333;">Report New Issue</h3>
     
     <form method="POST" action="{{ route('tenant.store-maintenance') }}" enctype="multipart/form-data">
         @csrf
 
         <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Describe the Issue</label>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px; color: #333;">Describe the Issue</label>
             <textarea name="description" rows="4" required 
                       placeholder="E.g., Bathroom sink is clogged, WiFi not working, light bulb broken..."
-                      style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial, sans-serif;"></textarea>
+                      style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial, sans-serif; font-size: 14px;"></textarea>
             @error('description')
                 <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
             @enderror
         </div>
 
         <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Upload Photo (Optional)</label>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px; color: #333;">Upload Photo (Optional)</label>
             <input type="file" name="photo" accept="image/*" 
-                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
             <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Upload a photo of the issue if applicable</p>
             @error('photo')
                 <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
@@ -44,15 +38,15 @@
         </div>
 
         <button type="submit" 
-                style="padding: 12px 30px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 500;">
+                style="padding: 12px 30px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.3s;">
             Submit Report
         </button>
     </form>
 </div>
 
 <!-- My Maintenance Requests -->
-<div style="margin-top: 30px;">
-    <h3 style="margin-bottom: 15px; font-size: 18px; color: #333;">My Maintenance Requests</h3>
+<div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 25px;">
+    <h3 style="margin-bottom: 20px; font-size: 18px; color: #333;">My Maintenance Requests</h3>
     
     @php
         $requests = \App\Models\MaintenanceRequest::where('tenantID', Auth::id())
@@ -60,74 +54,82 @@
             ->get();
     @endphp
 
-    <div style="background: white; border-radius: 8px; border: 1px solid #e0e0e0; height: 350px; overflow-y: auto; padding: 15px;">
-        @if($requests->count() > 0)
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                @foreach($requests as $req)
-                <div id="request-card-{{ $req->requestID }}" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px;
-                    {{ $req->status === 'completed' ? 'background-color: #f0f9f4;' : 
-                       ($req->status === 'scheduled' ? 'background-color: #f0f7ff;' : 'background-color: #fffbf0;') }}">
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div style="flex: 1;">
-                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                <span id="status-badge-{{ $req->requestID }}" class="status-badge status-{{ $req->status }}">
-                                    {{ ucfirst($req->status) }}
-                                </span>
-                                <p style="font-size: 12px; color: #999; margin: 0;">
-                                    {{ date('M d, Y h:i A', strtotime($req->created_at)) }}
-                                </p>
-                            </div>
-                            
-                            <p style="margin: 0 0 10px 0; color: #333; font-size: 14px; line-height: 1.6;">{{ $req->description }}</p>
-                            
-                            <div id="status-message-{{ $req->requestID }}">
-                                @if($req->status === 'pending')
-                                    <p style="font-size: 13px; color: #856404; background-color: #fff3cd; padding: 8px 12px; border-radius: 4px; margin: 0;">
-                                        ⏳ Waiting for admin to schedule maintenance
-                                    </p>
-                                @elseif($req->status === 'scheduled')
-                                    <p style="font-size: 13px; color: #084298; background-color: #cfe2ff; padding: 8px 12px; border-radius: 4px; margin: 0;">
-                                        📅 Maintenance has been scheduled. Mark as completed once fixed.
-                                    </p>
-                                @else
-                                    <p style="font-size: 13px; color: #155724; background-color: #d4edda; padding: 8px 12px; border-radius: 4px; margin: 0;">
-                                        ✓ Issue resolved and completed
-                                    </p>
-                                @endif
-                            </div>
+    @if($requests->count() > 0)
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            @foreach($requests as $req)
+            <div id="request-card-{{ $req->requestID }}" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; transition: all 0.3s;
+                {{ $req->status === 'completed' ? 'background-color: #f0f9f4; border-left: 4px solid #28a745;' : 
+                   ($req->status === 'scheduled' ? 'background-color: #f0f7ff; border-left: 4px solid #007bff;' : 'background-color: #fffbf0; border-left: 4px solid #ffc107;') }}">
+                
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                            <span id="status-badge-{{ $req->requestID }}" class="status-badge status-{{ $req->status }}">
+                                {{ ucfirst($req->status) }}
+                            </span>
+                            <p style="font-size: 12px; color: #999; margin: 0;">
+                                {{ $req->created_at->format('M d, Y h:i A') }}
+                            </p>
                         </div>
                         
-                        <div id="action-buttons-{{ $req->requestID }}" style="display: flex; gap: 8px; align-items: start; margin-left: 15px;">
-                            @if($req->photo)
-                                <button onclick="viewIssuePhoto('{{ asset('storage/' . $req->photo) }}')" 
-                                        style="padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; white-space: nowrap;">
-                                    View Photo
-                                </button>
-                            @endif
-                            
-                            @if($req->status === 'scheduled')
-                                <button onclick="completeMaintenanceAjax({{ $req->requestID }})" class="btn-complete">
-                                    <span class="btn-text">Mark as Completed</span>
-                                    <span class="btn-loading" style="display: none;">
-                                        <span class="loading-spinner"></span> Processing...
-                                    </span>
-                                </button>
+                        <p style="margin: 0 0 15px 0; color: #333; font-size: 15px; line-height: 1.6; font-weight: 500;">{{ $req->description }}</p>
+                        
+                        <div id="status-message-{{ $req->requestID }}">
+                            @if($req->status === 'pending')
+                                <p style="font-size: 13px; color: #856404; background-color: #fff3cd; padding: 10px 15px; border-radius: 6px; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Waiting for admin to schedule maintenance
+                                </p>
+                            @elseif($req->status === 'scheduled')
+                                <p style="font-size: 13px; color: #084298; background-color: #cfe2ff; padding: 10px 15px; border-radius: 6px; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    Maintenance has been scheduled. Mark as completed once fixed.
+                                </p>
+                            @else
+                                <p style="font-size: 13px; color: #155724; background-color: #d4edda; padding: 10px 15px; border-radius: 6px; margin: 0; display: inline-flex; align-items: center; gap: 8px;">
+                                    <svg style="width: 16px; height: 16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Issue resolved and completed
+                                </p>
                             @endif
                         </div>
                     </div>
+                    
+                    <div id="action-buttons-{{ $req->requestID }}" style="display: flex; gap: 10px; align-items: start; margin-left: 20px;">
+                        @if($req->photo)
+                            <button onclick="viewIssuePhoto('{{ asset('storage/' . $req->photo) }}')" 
+                                    style="padding: 10px 18px; background-color: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; white-space: nowrap; transition: all 0.3s;">
+                                View Photo
+                            </button>
+                        @endif
+                        
+                        @if($req->status === 'scheduled')
+                            <button onclick="completeMaintenanceAjax({{ $req->requestID }})" class="btn-complete">
+                                <span class="btn-text">Mark as Completed</span>
+                                <span class="btn-loading" style="display: none;">
+                                    <span class="loading-spinner"></span> Processing...
+                                </span>
+                            </button>
+                        @endif
+                    </div>
                 </div>
-                @endforeach
             </div>
-        @else
-            <div style="text-align: center; padding: 60px 20px; color: #999;">
-                <svg style="width: 64px; height: 64px; margin: 0 auto 15px; opacity: 0.3;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                <p style="font-size: 16px; margin: 0;">No maintenance requests yet</p>
-            </div>
-        @endif
-    </div>
+            @endforeach
+        </div>
+    @else
+        <div style="text-align: center; padding: 60px 20px; color: #999;">
+            <svg style="width: 64px; height: 64px; margin: 0 auto 15px; opacity: 0.3;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p style="font-size: 16px; margin: 0; font-weight: 500;">No maintenance requests yet</p>
+            <p style="font-size: 14px; margin: 10px 0 0 0; color: #666;">Report an issue using the form above</p>
+        </div>
+    @endif
 </div>
 
 <!-- Photo Viewer Modal -->
@@ -151,8 +153,7 @@ function closePhotoModal() {
     document.getElementById('photoModal').style.display = 'none';
 }
 
-// Close modal when clicking outside the image
-document.getElementById('photoModal').addEventListener('click', function(e) {
+document.getElementById('photoModal')?.addEventListener('click', function(e) {
     if (e.target === this) {
         closePhotoModal();
     }
