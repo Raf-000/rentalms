@@ -144,6 +144,14 @@
             </div>
             
             <div id="tenantDetails"></div>
+            
+            <!-- Edit Button -->
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: right;">
+                <button id="editTenantBtn" onclick="editTenant()" 
+                        style="padding: 10px 24px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s;">
+                    Edit Tenant Info
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -204,6 +212,7 @@ function viewTenant(tenantId) {
     console.log('View clicked for tenant:', tenantId);
     console.log('Tenants data:', window.tenantsData);
     
+    selectedTenantId = tenantId;
     const tenant = window.tenantsData[tenantId];
     if (!tenant) {
         console.error('Tenant not found:', tenantId);
@@ -258,20 +267,13 @@ function viewTenant(tenantId) {
     document.getElementById('viewModal').style.display = 'flex';
 }
 
+function editTenant() {
+    if (!selectedTenantId) return;
+    window.location.href = `/admin/edit-tenant/${selectedTenantId}`;
+}
+
 function closeViewModal() {
     document.getElementById('viewModal').style.display = 'none';
-}
-
-// Delete tenant
-function confirmDelete(tenantId, tenantName) {
-    selectedTenantId = tenantId;
-    document.getElementById('deleteTenantName').textContent = tenantName;
-    document.getElementById('deleteModal').style.display = 'flex';
-}
-
-function closeDeleteModal() {
-    document.getElementById('deleteModal').style.display = 'none';
-    selectedTenantId = null;
 }
 
 function deleteTenant() {
@@ -285,11 +287,29 @@ function deleteTenant() {
     const csrfInput = document.createElement('input');
     csrfInput.type = 'hidden';
     csrfInput.name = '_token';
-    csrfInput.value = '{{ csrf_token() }}';
+    csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    const methodInput = document.createElement('input');
+    methodInput.type = 'hidden';
+    methodInput.name = '_method';
+    methodInput.value = 'DELETE';
     
     form.appendChild(csrfInput);
+    form.appendChild(methodInput);
     document.body.appendChild(form);
     form.submit();
+}
+
+// Delete tenant
+function confirmDelete(tenantId, tenantName) {
+    selectedTenantId = tenantId;
+    document.getElementById('deleteTenantName').textContent = tenantName;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+    selectedTenantId = null;
 }
 </script>
 

@@ -162,6 +162,60 @@ class AdminController extends Controller
         return view('admin.view-tenants', compact('tenants'));
     }
 
+    public function showEditTenant($tenantId)
+    {
+        $tenant = User::with('bedspace')->findOrFail($tenantId);
+        $bedspaces = Bedspace::where('status', 'available')
+            ->orWhere('unitID', $tenant->bedspace?->unitID)
+            ->orderBy('houseNo')
+            ->orderBy('floor')
+            ->orderBy('roomNo')
+            ->get();
+        
+        return view('admin.edit-tenant', compact('tenant', 'bedspaces'));
+    }
+
+    public function updateTenant(Request $request, $tenantId)
+    {
+        $tenant = User::findOrFail($tenantId);
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $tenantId,
+            'phone' => 'required|string|max:20',
+            'bedspace_id' => 'nullable|exists:bedspaces,unitID'
+        ]);
+        
+        // Update tenant info
+        $tenant->update([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone']
+        ]);
+        
+        // Handle bedspace change
+        if ($request->bedspace_id) {
+            // Free up old bedspace if exists
+            if ($tenant->bedspace) {
+                $oldBedspace = Bedspace::find($tenant->bedspace->unitID);
+                $oldBedspace->update([
+                    'tenantID' => null,
+                    'status' => 'available'
+                ]);
+            }
+            
+            // Assign new bedspace
+            $newBedspace = Bedspace::find($request->bedspace_id);
+            $newBedspace->update([
+                'tenantID' => $tenant->id,
+                'status' => 'occupied'
+            ]);
+        }
+        
+        return redirect()->route('admin.view-tenants')
+            ->with('success', 'Tenant updated successfully!');
+    }
+
     public function deleteTenant($tenantId)
     {
         $tenant = User::findOrFail($tenantId);

@@ -44,6 +44,16 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // View Tenants
     Route::get('/view-tenants', [App\Http\Controllers\AdminController::class, 'viewTenants'])
         ->name('view-tenants');
+    
+    // Delete Tenant
+    Route::delete('/delete-tenant/{tenantId}', [App\Http\Controllers\AdminController::class, 'deleteTenant'])
+        ->name('delete-tenant');
+    
+    // Edit Tenant Routes
+    Route::get('/edit-tenant/{tenantId}', [App\Http\Controllers\AdminController::class, 'showEditTenant'])
+        ->name('edit-tenant');
+    Route::put('/edit-tenant/{tenantId}', [App\Http\Controllers\AdminController::class, 'updateTenant'])
+        ->name('update-tenant');
 
     // Issue Bill
     Route::get('/issue-bill', [App\Http\Controllers\AdminController::class, 'showIssueBill'])
@@ -103,7 +113,6 @@ Route::middleware(['auth'])->prefix('tenant')->name('tenant.')->group(function (
         ->name('complete-maintenance-ajax');
     
 });
-
 
 // ============================================
 // PROFILE ROUTES (Protected)
