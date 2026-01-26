@@ -4,9 +4,13 @@
 
 // Smooth scroll to amenities section
 function scrollToAmenities() {
-    document.getElementById('amenities').scrollIntoView({ 
-        behavior: 'smooth' 
-    });
+    const amenitiesSection = document.getElementById('amenities');
+    if (amenitiesSection) {
+        amenitiesSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
 }
 
 // Smooth scroll for all anchor links

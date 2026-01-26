@@ -161,4 +161,45 @@ class TenantController extends Controller
         
         return redirect()->route('tenant.view-maintenance')->with('error', 'Cannot complete this request.');
     }
+
+    public function completeMaintenanceAjax($requestID)
+    {
+        try {
+            $request = \App\Models\MaintenanceRequest::where('requestID', $requestID)
+                ->where('tenantID', auth()->id())
+                ->firstOrFail();
+
+            if ($request->status === 'completed') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This request is already marked as completed.'
+                ], 400);
+            }
+
+            $request->update([
+                'status' => 'completed'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Maintenance request marked as completed!',
+                'request' => [
+                    'id' => $request->requestID,
+                    'status' => 'completed'
+                ]
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Maintenance request not found.'
+            ], 404);
+        } catch (\Exception $e) {
+            \Log::error('Complete maintenance error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while updating the request.'
+            ], 500);
+        }
+    }
 }

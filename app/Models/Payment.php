@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    protected $table = 'payments';
+    use HasFactory;
+
     protected $primaryKey = 'paymentID';
-    
+
     protected $fillable = [
         'billID',
         'tenantID',
@@ -16,9 +18,19 @@ class Payment extends Model
         'paymentMethod',
         'paidAt',
         'verifiedBy',
-        'verifiedAt'
+        'verifiedAt',
+        'rejectionReason',  // Make sure this is here
+        'rejectedBy',       // Make sure this is here
+        'rejectedAt',       // Make sure this is here
     ];
 
+    protected $casts = [
+        'paidAt' => 'datetime',
+        'verifiedAt' => 'datetime',
+        'rejectedAt' => 'datetime',
+    ];
+
+    // Relationships
     public function bill()
     {
         return $this->belongsTo(Bill::class, 'billID', 'billID');
@@ -32,5 +44,10 @@ class Payment extends Model
     public function verifier()
     {
         return $this->belongsTo(User::class, 'verifiedBy', 'id');
+    }
+
+    public function rejector()
+    {
+        return $this->belongsTo(User::class, 'rejectedBy', 'id');
     }
 }

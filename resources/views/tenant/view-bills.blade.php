@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="content-header">
-    <h1>Pay Bills</h1>
+    <h1>View Bills</h1>
     <p>Manage your rental payments</p>
 </div>
 
