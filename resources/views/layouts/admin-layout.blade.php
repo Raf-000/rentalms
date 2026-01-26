@@ -88,6 +88,7 @@
 
     <!-- Main Content Area -->
     <div class="main-content">
+        @yield('extra-css')
         @yield('content')
     </div>
 

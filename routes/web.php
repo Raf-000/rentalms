@@ -32,9 +32,8 @@ Route::post('/book-viewing/ajax', [App\Http\Controllers\HomeController::class, '
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\AdminController::class, 'dashboard'])
+        ->name('dashboard');
 
     // Create Account
     Route::get('/create-account', [App\Http\Controllers\AdminController::class, 'showCreateAccount'])

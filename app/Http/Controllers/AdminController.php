@@ -15,7 +15,7 @@ class AdminController extends Controller
     public function dashboard()
     {
         // Total Stats
-        $totalTenants = \App\Models\User::where('userType', 'tenant')->count();
+        $totalTenants = \App\Models\User::where('role', 'tenant')->count();
         $totalBedspaces = \App\Models\Bedspace::count();
         $occupiedBedspaces = \App\Models\Bedspace::where('status', 'occupied')->count();
         $availableBedspaces = \App\Models\Bedspace::where('status', 'available')->count();
@@ -65,24 +65,24 @@ class AdminController extends Controller
             ->take(5)
             ->get();
         
-        // Revenue Chart Data (Last 6 Months)
-        $revenueChartData = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $month = now()->subMonths($i);
-            $revenue = \App\Models\Payment::with('bill')
-                ->whereNotNull('verifiedAt')
-                ->whereYear('verifiedAt', $month->year)
-                ->whereMonth('verifiedAt', $month->month)
-                ->get()
-                ->sum(function($payment) {
-                    return $payment->bill->amount;
-                });
-            
-            $revenueChartData[] = [
-                'month' => $month->format('M Y'),
-                'revenue' => $revenue
-            ];
-        }
+        // Tenant Payment Status Chart Data
+        $tenantsFullyPaid = \App\Models\User::where('role', 'tenant')
+            ->whereDoesntHave('bills', function($query) {
+                $query->whereIn('status', ['pending', 'paid']);
+            })
+            ->count();
+
+        $tenantsWithPending = \App\Models\User::where('role', 'tenant')
+            ->whereHas('bills', function($query) {
+                $query->whereIn('status', ['pending', 'paid']);
+            })
+            ->count();
+
+        $paymentStatusData = [
+            'total' => $totalTenants,
+            'fullyPaid' => $tenantsFullyPaid,
+            'withPending' => $tenantsWithPending
+        ];
         
         return view('admin.dashboard', compact(
             'totalTenants',
@@ -99,10 +99,9 @@ class AdminController extends Controller
             'recentPayments',
             'recentMaintenance',
             'pendingBookings',
-            'revenueChartData'
+            'paymentStatusData' 
         ));
     }
-
     // Show the create account form
     public function showCreateAccount()
     {

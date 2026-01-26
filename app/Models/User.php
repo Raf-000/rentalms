@@ -55,4 +55,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Bedspace::class, 'tenantID', 'id');
     }
+
+    public function bills()
+    {
+        return $this->hasMany(Bill::class, 'tenantID', 'id');
+    }
 }
