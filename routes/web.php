@@ -3,65 +3,109 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+// ============================================
+// PUBLIC ROUTES
+// ============================================
+
 Route::get('/', function () {
     return view('homepage');
 });
 
-// Admin Dashboard Route
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->middleware(['auth'])->name('admin.dashboard');
+// View Available Rooms Route
+Route::get('/available-rooms', [App\Http\Controllers\HomeController::class, 'availableRooms'])
+    ->name('available-rooms');
 
-// Admin Create Account Routes
-Route::get('/admin/create-account', [App\Http\Controllers\AdminController::class, 'showCreateAccount'])
-    ->middleware(['auth'])->name('admin.create-account');
+// Book Viewing Routes
+Route::get('/book-viewing', [App\Http\Controllers\HomeController::class, 'bookViewing'])
+    ->name('book-viewing');
     
-Route::post('/admin/create-account', [App\Http\Controllers\AdminController::class, 'createAccount'])
-    ->middleware(['auth'])->name('admin.store-account');
+Route::post('/book-viewing', [App\Http\Controllers\HomeController::class, 'storeBooking'])
+    ->name('store-booking');
+
+Route::post('/book-viewing/ajax', [App\Http\Controllers\HomeController::class, 'storeBookingAjax'])
+    ->name('store-booking-ajax');
 
 
-Route::get('/admin/view-tenants', [App\Http\Controllers\AdminController::class, 'viewTenants'])
-    ->middleware(['auth'])->name('admin.view-tenants');
+// ============================================
+// ADMIN ROUTES (Protected)
+// ============================================
 
-Route::get('/admin/issue-bill', [App\Http\Controllers\AdminController::class, 'showIssueBill'])
-    ->middleware(['auth'])->name('admin.issue-bill');
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('dashboard');
+
+    // Create Account
+    Route::get('/create-account', [App\Http\Controllers\AdminController::class, 'showCreateAccount'])
+        ->name('create-account');
+    Route::post('/create-account', [App\Http\Controllers\AdminController::class, 'createAccount'])
+        ->name('store-account');
+
+    // View Tenants
+    Route::get('/view-tenants', [App\Http\Controllers\AdminController::class, 'viewTenants'])
+        ->name('view-tenants');
+
+    // Issue Bill
+    Route::get('/issue-bill', [App\Http\Controllers\AdminController::class, 'showIssueBill'])
+        ->name('issue-bill');
+    Route::post('/issue-bill', [App\Http\Controllers\AdminController::class, 'issueBill'])
+        ->name('store-bill');
+
+    // View Payments
+    Route::get('/view-payments', [App\Http\Controllers\AdminController::class, 'viewPayments'])
+        ->name('view-payments');
+    Route::post('/verify-payment/{paymentID}', [App\Http\Controllers\AdminController::class, 'verifyPayment'])
+        ->name('verify-payment');
     
-Route::post('/admin/issue-bill', [App\Http\Controllers\AdminController::class, 'issueBill'])
-    ->middleware(['auth'])->name('admin.store-bill');
+    // AJAX Payment Actions
+    Route::post('/payments/{payment}/verify-ajax', [App\Http\Controllers\AdminController::class, 'verifyPaymentAjax'])
+        ->name('payments.verify-ajax');
+    Route::post('/payments/{payment}/reject-ajax', [App\Http\Controllers\AdminController::class, 'rejectPaymentAjax'])
+        ->name('payments.reject-ajax');
 
-Route::get('/admin/view-payments', [App\Http\Controllers\AdminController::class, 'viewPayments'])
-    ->middleware(['auth'])->name('admin.view-payments');
+    // View Maintenance
+    Route::get('/view-maintenance', [App\Http\Controllers\AdminController::class, 'viewMaintenanceRequests'])
+        ->name('view-maintenance');
+    Route::post('/update-maintenance/{requestID}', [App\Http\Controllers\AdminController::class, 'updateMaintenanceStatus'])
+        ->name('update-maintenance');
+});
+
+
+// ============================================
+// TENANT ROUTES (Protected)
+// ============================================
+
+Route::middleware(['auth'])->prefix('tenant')->name('tenant.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [App\Http\Controllers\TenantController::class, 'dashboard'])
+        ->name('dashboard');
+
+    // View Bills
+    Route::get('/view-bills', [App\Http\Controllers\TenantController::class, 'viewBills'])
+        ->name('view-bills');
+    Route::post('/upload-payment/{billID}', [App\Http\Controllers\TenantController::class, 'uploadPayment'])
+        ->name('upload-payment');
+
+    // Maintenance Requests
+    Route::get('/create-maintenance', [App\Http\Controllers\TenantController::class, 'showCreateMaintenance'])
+        ->name('create-maintenance');
+    Route::post('/create-maintenance', [App\Http\Controllers\TenantController::class, 'createMaintenance'])
+        ->name('store-maintenance');
+    Route::get('/view-maintenance', [App\Http\Controllers\TenantController::class, 'viewMaintenance'])
+        ->name('view-maintenance');
+    Route::post('/complete-maintenance/{requestID}', [App\Http\Controllers\TenantController::class, 'completeMaintenance'])
+        ->name('complete-maintenance');
+
+    Route::post('/complete-maintenance/{requestID}/ajax', [App\Http\Controllers\TenantController::class, 'completeMaintenanceAjax'])
+        ->name('complete-maintenance-ajax');
     
-Route::post('/admin/verify-payment/{paymentID}', [App\Http\Controllers\AdminController::class, 'verifyPayment'])
-    ->middleware(['auth'])->name('admin.verify-payment');
+});
 
-Route::get('/admin/view-maintenance', [App\Http\Controllers\AdminController::class, 'viewMaintenanceRequests'])
-    ->middleware(['auth'])->name('admin.view-maintenance');
-    
-Route::post('/admin/update-maintenance/{requestID}', [App\Http\Controllers\AdminController::class, 'updateMaintenanceStatus'])
-    ->middleware(['auth'])->name('admin.update-maintenance');
 
-// Tenant Dashboard Route
-Route::get('/tenant/dashboard', [App\Http\Controllers\TenantController::class, 'dashboard'])
-    ->middleware(['auth'])->name('tenant.dashboard');
-
-Route::get('/tenant/view-bills', [App\Http\Controllers\TenantController::class, 'viewBills'])
-    ->middleware(['auth'])->name('tenant.view-bills');
-
-Route::post('/tenant/upload-payment/{billID}', [App\Http\Controllers\TenantController::class, 'uploadPayment'])
-    ->middleware(['auth'])->name('tenant.upload-payment');
-
-Route::get('/tenant/create-maintenance', [App\Http\Controllers\TenantController::class, 'showCreateMaintenance'])
-    ->middleware(['auth'])->name('tenant.create-maintenance');
-    
-Route::post('/tenant/create-maintenance', [App\Http\Controllers\TenantController::class, 'createMaintenance'])
-    ->middleware(['auth'])->name('tenant.store-maintenance');
-    
-Route::get('/tenant/view-maintenance', [App\Http\Controllers\TenantController::class, 'viewMaintenance'])
-    ->middleware(['auth'])->name('tenant.view-maintenance');
-
-Route::post('/tenant/complete-maintenance/{requestID}', [App\Http\Controllers\TenantController::class, 'completeMaintenance'])
-    ->middleware(['auth'])->name('tenant.complete-maintenance');
+// ============================================
+// PROFILE ROUTES (Protected)
+// ============================================
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

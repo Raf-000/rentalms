@@ -1,0 +1,230 @@
+/* ============================================
+   AVAILABLE ROOMS PAGE STYLES
+   ============================================ */
+
+body {
+    background-color: #E2E8E7;
+}
+
+/* Simple Header */
+.simple-header {
+    background-color: #E2E8E7;
+    padding: 20px 30px;
+    margin-bottom: 20px;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: #135757;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.back-btn:hover {
+    color: #096a6a;
+    transform: translateX(-5px);
+}
+
+/* Main Content */
+.main-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+.page-title {
+    font-size: 36px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+/* Houses Container */
+.houses-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin-bottom: 50px;
+}
+
+/* House Card */
+.house-card {
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #333;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.house-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #135757;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.house-icon {
+    width: 32px;
+    height: 32px;
+    stroke-width: 2;
+}
+
+.house1-color {
+    color: #135757;
+}
+
+.house2-color {
+    color: #ff66c4;
+}
+
+/* Floor Section */
+.floor-section {
+    margin-bottom: 20px;
+}
+
+.floor-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #135757;
+    margin-bottom: 10px;
+}
+
+.floor-note {
+    font-size: 13px;
+    color: #999;
+    font-style: italic;
+}
+
+.floor-divider {
+    border-top: 1px solid #333;
+    margin: 20px 0;
+}
+
+/* Rooms Grid */
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.rooms-grid.single-room {
+    grid-template-columns: 1fr;
+}
+
+/* Room Card */
+.room-card {
+    padding: 0;
+}
+
+.room-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.room-name {
+    font-size: 15px;
+    font-weight: bold;
+    color: #198787;
+    margin: 0;
+}
+
+.room-price {
+    font-size: 15px;
+    font-weight: bold;
+    color: #198787;
+    margin: 0;
+}
+
+/* Beds Grid */
+.beds-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+    margin-bottom: 12px;
+}
+
+.rooms-grid:not(.single-room) .beds-grid {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.bed-icon {
+    width: 48px;
+    height: 48px;
+    stroke-width: 1.5;
+    transition: all 0.3s;
+}
+
+.bed-icon.available {
+    color: #ccc;
+    opacity: 0.5;
+}
+
+.bed-icon.occupied {
+    color: #135757;
+    opacity: 1;
+}
+
+.availability-text {
+    font-size: 11px;
+    color: #666;
+    margin-top: 8px;
+    justify-self: center;
+}
+
+/* Book Section */
+.book-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #333;
+    text-align: center;
+}
+
+.book-btn {
+    display: inline-block;
+    padding: 15px 50px;
+    background-color: #135757;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.book-btn:hover {
+    background-color: #096a6a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(19, 87, 87, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .houses-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .rooms-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .beds-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .bed-icon {
+        width: 40px;
+        height: 40px;
+    }
+}

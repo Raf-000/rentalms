@@ -130,20 +130,97 @@ class AdminController extends Controller
         return view('admin.view-payments', compact('payments'));
     }
 
-    public function verifyPayment($paymentID)
+    public function verifyPaymentAjax(Payment $payment)
     {
-        $payment = Payment::findOrFail($paymentID);
-        
-        $payment->verifiedBy = auth()->id();
-        $payment->verifiedAt = now();
-        $payment->save();
-        
-        // Update bill status to verified
-        $bill = Bill::find($payment->billID);
-        $bill->status = 'verified';
-        $bill->save();
-        
-        return redirect()->route('admin.view-payments')->with('success', 'Payment verified successfully!');
+        try {
+            if ($payment->verifiedBy !== null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Payment already verified.'
+                ], 400);
+            }
+
+            $payment->update([
+                'verifiedBy' => auth()->id(),
+                'verifiedAt' => now(),
+            ]);
+
+            // Update bill status
+            $payment->bill->update(['status' => 'paid']);
+
+            // Refresh payment to get updated timestamps
+            $payment->refresh();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment verified successfully!',
+                'payment' => [
+                    'id' => $payment->paymentID,
+                    'status' => 'verified',
+                    'verifiedBy' => auth()->user()->name,
+                    'verifiedAt' => $payment->verifiedAt ? $payment->verifiedAt->format('M d, Y g:i A') : null
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Verify payment error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while verifying payment: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function rejectPaymentAjax(Request $request, Payment $payment)
+    {
+        try {
+            $validated = $request->validate([
+                'rejection_reason' => 'required|string|max:500'
+            ]);
+
+            if ($payment->verifiedBy !== null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot reject a verified payment.'
+                ], 400);
+            }
+
+            $payment->update([
+                'rejectionReason' => $validated['rejection_reason'],
+                'rejectedBy' => auth()->id(),
+                'rejectedAt' => now(),
+            ]);
+
+            // Update bill status
+            $payment->bill->update(['status' => 'rejected']);
+
+            // Refresh payment to get updated timestamps
+            $payment->refresh();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment rejected successfully!',
+                'payment' => [
+                    'id' => $payment->paymentID,
+                    'status' => 'rejected',
+                    'rejectedBy' => auth()->user()->name,
+                    'rejectedAt' => $payment->rejectedAt ? $payment->rejectedAt->format('M d, Y g:i A') : null,
+                    'rejectionReason' => $payment->rejectionReason
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Reject payment error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while rejecting payment: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function rejectPayment(Request $request, $paymentID)

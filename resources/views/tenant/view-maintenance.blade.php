@@ -1,5 +1,9 @@
 @extends('layouts.tenant-layout')
 
+@section('extra-css')
+<link rel="stylesheet" href="{{ asset('css/tenant-maintenance.css') }}">
+@endsection
+
 @section('content')
 <div class="content-header">
     <h1>Maintenance Report</h1>
@@ -60,16 +64,14 @@
         @if($requests->count() > 0)
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 @foreach($requests as $req)
-                <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px;
+                <div id="request-card-{{ $req->requestID }}" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px;
                     {{ $req->status === 'completed' ? 'background-color: #f0f9f4;' : 
                        ($req->status === 'scheduled' ? 'background-color: #f0f7ff;' : 'background-color: #fffbf0;') }}">
                     
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div style="flex: 1;">
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500;
-                                    {{ $req->status === 'completed' ? 'background-color: #d4edda; color: #155724;' : 
-                                       ($req->status === 'scheduled' ? 'background-color: #cfe2ff; color: #084298;' : 'background-color: #fff3cd; color: #856404;') }}">
+                                <span id="status-badge-{{ $req->requestID }}" class="status-badge status-{{ $req->status }}">
                                     {{ ucfirst($req->status) }}
                                 </span>
                                 <p style="font-size: 12px; color: #999; margin: 0;">
@@ -79,22 +81,24 @@
                             
                             <p style="margin: 0 0 10px 0; color: #333; font-size: 14px; line-height: 1.6;">{{ $req->description }}</p>
                             
-                            @if($req->status === 'pending')
-                                <p style="font-size: 13px; color: #856404; background-color: #fff3cd; padding: 8px 12px; border-radius: 4px; margin: 0;">
-                                    ⏳ Waiting for admin to schedule maintenance
-                                </p>
-                            @elseif($req->status === 'scheduled')
-                                <p style="font-size: 13px; color: #084298; background-color: #cfe2ff; padding: 8px 12px; border-radius: 4px; margin: 0;">
-                                    📅 Maintenance has been scheduled. Mark as completed once fixed.
-                                </p>
-                            @else
-                                <p style="font-size: 13px; color: #155724; background-color: #d4edda; padding: 8px 12px; border-radius: 4px; margin: 0;">
-                                    ✓ Issue resolved and completed
-                                </p>
-                            @endif
+                            <div id="status-message-{{ $req->requestID }}">
+                                @if($req->status === 'pending')
+                                    <p style="font-size: 13px; color: #856404; background-color: #fff3cd; padding: 8px 12px; border-radius: 4px; margin: 0;">
+                                        ⏳ Waiting for admin to schedule maintenance
+                                    </p>
+                                @elseif($req->status === 'scheduled')
+                                    <p style="font-size: 13px; color: #084298; background-color: #cfe2ff; padding: 8px 12px; border-radius: 4px; margin: 0;">
+                                        📅 Maintenance has been scheduled. Mark as completed once fixed.
+                                    </p>
+                                @else
+                                    <p style="font-size: 13px; color: #155724; background-color: #d4edda; padding: 8px 12px; border-radius: 4px; margin: 0;">
+                                        ✓ Issue resolved and completed
+                                    </p>
+                                @endif
+                            </div>
                         </div>
                         
-                        <div style="display: flex; gap: 8px; align-items: start; margin-left: 15px;">
+                        <div id="action-buttons-{{ $req->requestID }}" style="display: flex; gap: 8px; align-items: start; margin-left: 15px;">
                             @if($req->photo)
                                 <button onclick="viewIssuePhoto('{{ asset('storage/' . $req->photo) }}')" 
                                         style="padding: 8px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; white-space: nowrap;">
@@ -103,14 +107,12 @@
                             @endif
                             
                             @if($req->status === 'scheduled')
-                                <form method="POST" action="{{ route('tenant.complete-maintenance', $req->requestID) }}" style="display: inline;">
-                                    @csrf
-                                    <button type="submit" 
-                                            onclick="return confirm('Are you sure the issue has been fixed?')"
-                                            style="padding: 8px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; white-space: nowrap;">
-                                        Mark as Completed
-                                    </button>
-                                </form>
+                                <button onclick="completeMaintenanceAjax({{ $req->requestID }})" class="btn-complete">
+                                    <span class="btn-text">Mark as Completed</span>
+                                    <span class="btn-loading" style="display: none;">
+                                        <span class="loading-spinner"></span> Processing...
+                                    </span>
+                                </button>
                             @endif
                         </div>
                     </div>
@@ -156,5 +158,8 @@ document.getElementById('photoModal').addEventListener('click', function(e) {
     }
 });
 </script>
+@endsection
 
+@section('scripts')
+<script src="{{ asset('js/tenant-maintenance.js') }}"></script>
 @endsection
