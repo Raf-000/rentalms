@@ -158,6 +158,7 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     margin-top: 15px;
+    width: 100%;
 }
 
 .action-btn {
@@ -333,27 +334,27 @@
 
 <!-- Revenue Chart & Quick Actions -->
 <div class="dashboard-grid">
-    <div class="chart-card">
+    <!--div class="chart-card">
         <div class="chart-card">
         <h3>Tenant Payment Status</h3>
         <canvas id="paymentStatusChart" width="400" height="200"></canvas>
         
-        <div style="margin-top: 20px; display: flex; gap: 20px; justify-content: center;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div style="width: 12px; height: 12px; background-color: #007bff; border-radius: 3px;"></div>
-                <span style="font-size: 13px; color: #666;">Total Tenants</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div style="width: 12px; height: 12px; background-color: #28a745; border-radius: 3px;"></div>
-                <span style="font-size: 13px; color: #666;">Fully Paid</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 3px;"></div>
-                <span style="font-size: 13px; color: #666;">With Pending Bills</span>
+            <div style="margin-top: 20px; display: flex; gap: 20px; justify-content: center;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background-color: #007bff; border-radius: 3px;"></div>
+                    <span style="font-size: 13px; color: #666;">Total Tenants</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background-color: #28a745; border-radius: 3px;"></div>
+                    <span style="font-size: 13px; color: #666;">Fully Paid</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 3px;"></div>
+                    <span style="font-size: 13px; color: #666;">With Pending Bills</span>
+                </div>
             </div>
         </div>
-    </div>
-    </div>
+    </div-->
     
     <div class="chart-card">
         <h3>Quick Actions</h3>
@@ -450,7 +451,7 @@
 </div>
 @endsection
 
-@section('scripts')
+{{-- @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Tenant Payment Status Chart
@@ -527,6 +528,6 @@ if (ctx) {
             }
         }
     });
-}
+} 
 </script>
-@endsection
+@endsection --}}

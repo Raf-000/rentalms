@@ -10,6 +10,18 @@
     <p>Report and track maintenance issues</p>
 </div>
 
+@if(session('success'))
+    <div style="background-color: #d4edda; color: #155724; padding: 12px 20px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if(session('error'))
+    <div style="background-color: #f8d7da; color: #721c24; padding: 12px 20px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #dc3545;">
+        {{ session('error') }}
+    </div>
+@endif
+
 <!-- Report New Issue Card -->
 <div class="card" style="margin-bottom: 30px; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid #007bff;">
     <h3 style="margin-bottom: 20px; font-size: 18px; color: #333;">Report New Issue</h3>
@@ -17,6 +29,19 @@
     <form method="POST" action="{{ route('tenant.store-maintenance') }}" enctype="multipart/form-data">
         @csrf
 
+        <!-- ADD THIS DEBUG BLOCK -->
+        @if ($errors->any())
+            <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #dc3545;">
+                <strong>Errors:</strong>
+                <ul style="margin: 10px 0 0 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        <!-- END DEBUG BLOCK -->
+         
         <div style="margin-bottom: 20px;">
             <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px; color: #333;">Describe the Issue</label>
             <textarea name="description" rows="4" required 
