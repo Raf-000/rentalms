@@ -204,6 +204,99 @@ class AdminController extends Controller
         return redirect()->route('admin.issue-bill')->with('success', 'Bill issued successfully!');
     }
 
+    // View all bills with filters
+    public function viewBills(Request $request)
+    {
+        $query = Bill::with(['tenant', 'payments']);
+        
+        // Filter by tenant
+        if ($request->tenant_id) {
+            $query->where('tenantID', $request->tenant_id);
+        }
+        
+        // Filter by status
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter by due date range
+        if ($request->date_from) {
+            $query->whereDate('dueDate', '>=', $request->date_from);
+        }
+        if ($request->date_to) {
+            $query->whereDate('dueDate', '<=', $request->date_to);
+        }
+        
+        $bills = $query->orderBy('dueDate', 'desc')->get();
+        $tenants = User::where('role', 'tenant')->orderBy('name')->get();
+        
+        return view('admin.bills.index', compact('bills', 'tenants'));
+    }
+
+    // Show create bill form
+    public function createBill()
+    {
+        $tenants = User::where('role', 'tenant')->with('bedspace')->orderBy('name')->get();
+        return view('admin.bills.create', compact('tenants'));
+    }
+
+    // Store new bill
+    public function storeBill(Request $request)
+    {
+        $validated = $request->validate([
+            'tenantID' => 'required|exists:users,id',
+            'amount' => 'required|numeric|min:0',
+            'description' => 'nullable|string|max:500',
+            'dueDate' => 'required|date',
+            'status' => 'required|in:pending,paid,verified,rejected,void'
+        ]);
+        
+        Bill::create($validated);
+        
+        return redirect()->route('admin.bills.index')
+            ->with('success', 'Bill issued successfully!');
+    }
+
+    // Show edit bill form
+    public function editBill($billID)
+    {
+        $bill = Bill::with('tenant')->findOrFail($billID);
+        $tenants = User::where('role', 'tenant')->orderBy('name')->get();
+        
+        return view('admin.bills.edit', compact('bill', 'tenants'));
+    }
+
+    // Update bill
+    public function updateBill(Request $request, $billID)
+    {
+        $bill = Bill::findOrFail($billID);
+        
+        $validated = $request->validate([
+            'tenantID' => 'required|exists:users,id',
+            'amount' => 'required|numeric|min:0',
+            'description' => 'nullable|string|max:500',
+            'dueDate' => 'required|date',
+            'status' => 'required|in:pending,paid,verified,rejected,void'
+        ]);
+        
+        $bill->update($validated);
+        
+        return redirect()->route('admin.bills.index')
+            ->with('success', 'Bill updated successfully!');
+    }
+
+    // Void bill (soft delete)
+    public function voidBill($billID)
+    {
+        $bill = Bill::findOrFail($billID);
+        
+        // Mark as void instead of deleting
+        $bill->update(['status' => 'void']);
+        
+        return redirect()->route('admin.bills.index')
+            ->with('success', 'Bill voided successfully!');
+    }
+
     public function getTenantBills($tenantId)
     {
         $bills = Bill::where('tenantID', $tenantId)->get();

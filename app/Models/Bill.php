@@ -12,8 +12,12 @@ class Bill extends Model
     protected $fillable = [
         'tenantID',
         'amount',
+        'description',
         'dueDate',
         'status'
+    ];
+
+    protected $casts = [ 'dueDate' => 'date', // 👈 this makes $bill->dueDate a Carbon instance 
     ];
 
     public function tenant()
