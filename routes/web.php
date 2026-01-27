@@ -55,11 +55,20 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::put('/edit-tenant/{tenantId}', [App\Http\Controllers\AdminController::class, 'updateTenant'])
         ->name('update-tenant');
 
-    // Issue Bill
-    Route::get('/issue-bill', [App\Http\Controllers\AdminController::class, 'showIssueBill'])
-        ->name('issue-bill');
-    Route::post('/issue-bill', [App\Http\Controllers\AdminController::class, 'issueBill'])
-        ->name('store-bill');
+    // Bills CRUD
+    Route::get('/bills', [App\Http\Controllers\AdminController::class, 'viewBills'])
+        ->name('bills.index');
+    Route::get('/bills/create', [App\Http\Controllers\AdminController::class, 'createBill'])
+        ->name('bills.create');
+    Route::post('/bills', [App\Http\Controllers\AdminController::class, 'storeBill'])
+        ->name('bills.store');
+    Route::get('/bills/{billID}/edit', [App\Http\Controllers\AdminController::class, 'editBill'])
+        ->name('bills.edit');
+    Route::put('/bills/{billID}', [App\Http\Controllers\AdminController::class, 'updateBill'])
+        ->name('bills.update');
+    Route::delete('/bills/{billID}', [App\Http\Controllers\AdminController::class, 'voidBill'])
+        ->name('bills.void');
+
 
     // View Payments
     Route::get('/view-payments', [App\Http\Controllers\AdminController::class, 'viewPayments'])
@@ -111,6 +120,16 @@ Route::middleware(['auth'])->prefix('tenant')->name('tenant.')->group(function (
 
     Route::post('/complete-maintenance/{requestID}/ajax', [App\Http\Controllers\TenantController::class, 'completeMaintenanceAjax'])
         ->name('complete-maintenance-ajax');
+
+    // Viewing Bookings CRUD
+    Route::get('/viewing-bookings', [AdminController::class, 'viewViewingBookings'])
+        ->name('viewing-bookings.index');
+    Route::get('/viewing-bookings/{id}/edit', [AdminController::class, 'editViewingBooking'])
+        ->name('viewing-bookings.edit');
+    Route::put('/viewing-bookings/{id}', [AdminController::class, 'updateViewingBooking'])
+        ->name('viewing-bookings.update');
+    Route::delete('/viewing-bookings/{id}', [AdminController::class, 'deleteViewingBooking'])
+        ->name('viewing-bookings.delete');
     
 });
 
