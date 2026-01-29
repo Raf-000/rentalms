@@ -7,6 +7,7 @@ use App\Models\Bedspace;
 use App\Models\Bill;
 use App\Models\Payment;
 use App\Models\MaintenanceRequest;
+use App\Models\ViewingBooking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -427,6 +428,8 @@ class AdminController extends Controller
         return redirect()->route('admin.view-payments')->with('success', 'Payment rejected successfully');
     }
 
+    //================================== Maintenance Requests ==================================//
+    //view maintenance requests
     public function viewMaintenanceRequests()
     {
         $requests = MaintenanceRequest::with('tenant')
@@ -436,6 +439,7 @@ class AdminController extends Controller
         return view('admin.view-maintenance', compact('requests'));
     }
 
+    // Update maintenance request status
     public function updateMaintenanceStatus(Request $request, $requestID)
     {
         $maintenanceRequest = MaintenanceRequest::findOrFail($requestID);
@@ -448,5 +452,154 @@ class AdminController extends Controller
         $maintenanceRequest->save();
         
         return redirect()->route('admin.view-maintenance')->with('success', 'Status updated successfully!');
+    }
+
+//================================== Viewing Bookings ==================================//
+    // View all bookings
+    public function viewBookings(Request $request)
+    {
+        $query = ViewingBooking::query();
+        
+        // Filter by status
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+        
+        // Filter by date
+        if ($request->date_from) {
+            $query->whereDate('preferred_date', '>=', $request->date_from);
+        }
+        if ($request->date_to) {
+            $query->whereDate('preferred_date', '<=', $request->date_to);
+        }
+        
+        $bookings = $query->orderBy('created_at', 'desc')->get();
+        
+        // Stats for cards
+        $stats = [
+            'thisMonth' => ViewingBooking::whereMonth('preferred_date', now()->month)
+                ->whereYear('preferred_date', now()->year)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->count(),
+            'pending' => ViewingBooking::where('status', 'pending')->count(),
+            'confirmed' => ViewingBooking::where('status', 'confirmed')->count()
+        ];
+        
+        return view('admin.bookings.index', compact('bookings', 'stats'));
+    }
+
+    // Show create booking form
+    public function createBooking()
+    {
+        $bedspaces = Bedspace::where('status', 'available')->get();
+        return view('admin.bookings.create', compact('bedspaces'));
+    }
+
+    // Store new booking
+    public function storeBooking(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'gender' => 'required|in:male,female',
+            'bedspace_id' => 'required|exists:bedspaces,unitID',
+            'preferred_date' => 'required|date',
+            'preferred_time' => 'nullable|string|max:50',
+            'message' => 'nullable|string|max:500',
+            'status' => 'required|in:pending,confirmed,cancelled,completed'
+        ]);
+        
+        ViewingBooking::create($validated);
+        
+        return redirect()->route('admin.bookings.index')
+            ->with('success', 'Booking created successfully!');
+    }
+
+    // Show edit booking form
+    public function editBooking($id)
+    {
+        $booking = ViewingBooking::findOrFail($id);
+        $bedspaces = Bedspace::where('status', 'available')
+            ->orWhere('unitID', $booking->bedspace_id)
+            ->get();
+        
+        return view('admin.bookings.edit', compact('booking', 'bedspaces'));
+    }
+
+    // Update booking
+    public function updateBooking(Request $request, $id)
+    {
+        $booking = ViewingBooking::findOrFail($id);
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'gender' => 'required|in:male,female',
+            'bedspace_id' => 'required|exists:bedspaces,unitID',
+            'preferred_date' => 'required|date',
+            'preferred_time' => 'nullable|string|max:50',
+            'message' => 'nullable|string|max:500',
+            'status' => 'required|in:pending,confirmed,cancelled,completed'
+        ]);
+        
+        // Update explicitly
+        $booking->name = $validated['name'];
+        $booking->email = $validated['email'];
+        $booking->phone = $validated['phone'];
+        $booking->gender = $validated['gender'];
+        $booking->bedspace_id = $validated['bedspace_id'];
+        $booking->preferred_date = $validated['preferred_date'];
+        $booking->preferred_time = $validated['preferred_time'];
+        $booking->message = $validated['message'];
+        $booking->status = $validated['status'];
+        $booking->save();
+        
+        return redirect()->route('admin.bookings.index')
+            ->with('success', 'Booking updated successfully!');
+    }
+
+    // Confirm booking
+    public function confirmBooking($id)
+    {
+        $booking = ViewingBooking::findOrFail($id);
+        $booking->status = 'confirmed';
+        $booking->save();
+        
+        return redirect()->route('admin.bookings.index')
+            ->with('success', 'Booking confirmed successfully!');
+    }
+
+    // Complete booking
+    public function completeBooking($id)
+    {
+        $booking = ViewingBooking::findOrFail($id);
+        $booking->status = 'completed';
+        $booking->save();
+        
+        return redirect()->route('admin.bookings.index')
+            ->with('success', 'Booking marked as completed!');
+    }
+
+    // Cancel booking
+    public function cancelBooking($id)
+    {
+        $booking = ViewingBooking::findOrFail($id);
+        $booking->status = 'cancelled';
+        $booking->save();
+        
+        return redirect()->route('admin.bookings.index')
+            ->with('success', 'Booking cancelled successfully!');
+    }
+
+    // Delete booking permanently
+    public function deleteBooking($id)
+    {
+        $booking = ViewingBooking::findOrFail($id);
+        $booking->delete();
+        
+        return redirect()->route('admin.bookings.index')
+            ->with('success', 'Booking deleted permanently!');
     }
 }

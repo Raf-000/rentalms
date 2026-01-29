@@ -214,10 +214,7 @@ document.getElementById('photoModal')?.addEventListener('click', function(e) {
 });
 </script>
 @endsection
-@endsection
 
-@section('scripts')
-<script src="{{ asset('js/tenant-maintenance.js') }}"></script>
 @section('scripts')
 <script src="{{ asset('js/tenant-maintenance.js') }}"></script>
 @endsection

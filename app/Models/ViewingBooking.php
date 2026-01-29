@@ -9,6 +9,9 @@ class ViewingBooking extends Model
 {
     use HasFactory;
 
+    protected $table = 'viewing_bookings';
+    protected $primaryKey = 'id';
+
     protected $fillable = [
         'name',
         'email',
@@ -18,14 +21,16 @@ class ViewingBooking extends Model
         'preferred_date',
         'preferred_time',
         'message',
-        'status',
+        'status'
     ];
 
     protected $casts = [
         'preferred_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
-    // Relationship to bedspace
+    // Relationship to Bedspace
     public function bedspace()
     {
         return $this->belongsTo(Bedspace::class, 'bedspace_id', 'unitID');

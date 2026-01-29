@@ -101,32 +101,25 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::post('/update-maintenance/{requestID}', [App\Http\Controllers\AdminController::class, 'updateMaintenanceStatus'])
         ->name('update-maintenance');
 
-
-
-    // In routes/web.php - TEMPORARY TEST ROUTE
-    Route::get('/test-chart-data', function() {
-        $totalTenants = \App\Models\User::where('role', 'tenant')->count();
-        
-        $tenantsFullyPaid = \App\Models\User::where('role', 'tenant')
-            ->whereDoesntHave('bills', function($query) {
-                $query->whereIn('status', ['pending', 'paid']);
-            })
-            ->count();
-
-        $tenantsWithPending = \App\Models\User::where('role', 'tenant')
-            ->whereHas('bills', function($query) {
-                $query->whereIn('status', ['pending', 'paid']);
-            })
-            ->count();
-
-        return [
-            'total' => $totalTenants,
-            'fullyPaid' => $tenantsFullyPaid,
-            'withPending' => $tenantsWithPending,
-            'all_tenants' => \App\Models\User::where('role', 'tenant')->with('bills')->get()
-        ];
-    });
-
+    // Viewing Bookings CRUD
+    Route::get('/bookings', [App\Http\Controllers\AdminController::class, 'viewBookings'])
+        ->name('bookings.index');
+    Route::get('/bookings/create', [App\Http\Controllers\AdminController::class, 'createBooking'])
+        ->name('bookings.create');
+    Route::post('/bookings', [App\Http\Controllers\AdminController::class, 'storeBooking'])
+        ->name('bookings.store');
+    Route::get('/bookings/{id}/edit', [App\Http\Controllers\AdminController::class, 'editBooking'])
+        ->name('bookings.edit');
+    Route::put('/bookings/{id}', [App\Http\Controllers\AdminController::class, 'updateBooking'])
+        ->name('bookings.update');
+    Route::post('/bookings/{id}/confirm', [App\Http\Controllers\AdminController::class, 'confirmBooking'])
+        ->name('bookings.confirm');
+    Route::post('/bookings/{id}/complete', [App\Http\Controllers\AdminController::class, 'completeBooking'])
+        ->name('bookings.complete');
+    Route::post('/bookings/{id}/cancel', [App\Http\Controllers\AdminController::class, 'cancelBooking'])
+        ->name('bookings.cancel');
+    Route::delete('/bookings/{id}', [App\Http\Controllers\AdminController::class, 'deleteBooking'])
+        ->name('bookings.delete');
     
 });
 

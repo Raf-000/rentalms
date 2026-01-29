@@ -116,7 +116,7 @@
             try {
                 $validated = $request->validate([
                     'description' => 'required|string|max:500',
-                    'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10000000' // 10MB max
+                    'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:500000000' // 500MB max
                 ]);
                 
                 $photoPath = null;
@@ -159,7 +159,7 @@
         {
             $validated = $request->validate([
                 'description' => 'required|string|max:500',
-                'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120' // 5MB max
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:500000000' // 500MB max
             ]);
             
             $photoPath = null;
