@@ -1,15 +1,29 @@
 @extends('layouts.admin-layout')
 
-@section('content')
-<div class="content-header">
-    <h1>Payment Management</h1>
-    <p>Review and manage tenant payments</p>
-</div>
+<style>
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+</style>
 
-<div style="display: flex; gap: 20px;">
-    
-    <!-- Left Side - Stats Cards (25%) -->
-    <div style="width: 25%; min-width: 250px;">
+
+@section('content')
+
+<div class="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[#f6f8f7]/80 to-[#E2E8E7]/80">
+    <div class="max-w-7xl mx-auto space-y-8">
+
+        <div>
+            <h1 class="text-4xl font-bold text-[#135757] mb-2">Payments Management</h1>
+            <p class="text-gray-600 text-lg">Review and manage tenant payments</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @php
                 $currentMonth = now()->format('F Y');
                 
@@ -36,43 +50,41 @@
                 $expectedRevenue = \App\Models\Bill::whereIn('status', ['pending'])
                     ->sum('amount');
             @endphp
-        
-        <!-- Verified This Month Card -->
-        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #28a745; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <div style="margin-bottom: 10px;">
-                <p style="font-size: 11px; color: #666; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Confirmed Revenue</p>
-                <p style="font-size: 12px; color: #999; margin: 0;">{{ $currentMonth }}</p>
+            
+            <!-- Confirmed Revenue -->
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-l-4 border-green-500">
+                <p class="text-xs uppercase tracking-wide text-gray-500">Confirmed Revenue</p>
+                <p class="text-sm text-gray-400">{{ $currentMonth }}</p>
+                <p class="mt-4 text-3xl font-bold text-green-600">
+                    ₱{{ number_format($verifiedThisMonth, 2) }}
+                </p>
             </div>
-            <p style="font-size: 32px; font-weight: bold; margin: 0; color: #28a745;">₱{{ number_format($verifiedThisMonth, 2) }}</p>
+
+            <!-- Awaiting Verification Card -->
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-l-4 border-blue-500">
+                <p class="text-xs uppercase tracking-wide text-gray-500">Pending Verification</p>
+                <p class="text-sm text-gray-400">Awaiting admin review</p>
+                <p class="mt-4 text-3xl font-bold text-blue-600">
+                    ₱{{ number_format($pendingVerification, 2) }}
+                </p>
+            </div>
+
+            <!-- Outstanding Balance -->
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-l-4 border-yellow-500">
+                <p class="text-xs uppercase tracking-wide text-gray-500">Outstanding Balance</p>
+                <p class="text-sm text-gray-400">As of {{ now()->format('M d, Y') }}</p>
+                <p class="mt-4 text-3xl font-bold text-yellow-500">
+                    ₱{{ number_format($expectedRevenue, 2) }}
+                </p>
+            </div>
         </div>
 
-        <!-- Awaiting Verification Card -->
-        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #007bff; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <div style="margin-bottom: 10px;">
-                <p style="font-size: 11px; color: #666; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Pending Verification</p>
-                <p style="font-size: 12px; color: #999; margin: 0;">Awaiting admin review</p>
-            </div>
-            <p style="font-size: 32px; font-weight: bold; margin: 0; color: #007bff;">₱{{ number_format($pendingVerification, 2) }}</p>
-        </div>
-
-        <!-- Expected Revenue Card -->
-        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <div style="margin-bottom: 10px;">
-                <p style="font-size: 11px; color: #666; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Outstanding Balance</p>
-                <p style="font-size: 12px; color: #999; margin: 0;">As of {{ now()->format('M d, Y') }}</p>
-            </div>
-            <p style="font-size: 32px; font-weight: bold; margin: 0; color: #ffc107;">₱{{ number_format($expectedRevenue, 2) }}</p>
-        </div>
-    </div>
-
-    <!-- Right Side - Payment History (75%) -->
-    <div style="flex: 1;">
-        <div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: calc(100vh - 200px); display: flex; flex-direction: column;">
-            <div style="padding: 20px; border-bottom: 1px solid #e0e0e0;">
-                <h3 style="margin: 0; font-size: 18px; color: #333;">Payment History</h3>
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Payment History</h3>
             </div>
             
-            <div style="flex: 1; overflow-y: auto; padding: 20px;">
+            <div class="max-h-[65vh] overflow-y-auto p-6 space-y-4">
                 @php
                     $payments = \App\Models\Payment::with(['bill', 'tenant'])
                         ->orderBy('paidAt', 'desc')
@@ -88,17 +100,20 @@
                             $isRejected = !is_null($payment->rejectedBy);
                         @endphp
                         
-                        <div id="payment-card-{{ $payment->paymentID }}" style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px;
-                            {{ $isVerified ? 'background-color: #f0f9f4;' : 
-                               ($isRejected ? 'background-color: #fff5f5;' : 'background-color: #f0f7ff;') }}">
+                        <div id="payment-card-{{ $payment->paymentID }}"
+                            class="rounded-xl border p-5 transition
+                            {{ $isVerified ? 'bg-green-50 border-green-200' :
+                                ($isRejected ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200') }}">
+
                             
                             <div style="display: flex; justify-content: space-between; align-items: start;">
                                 <div style="flex: 1;">
                                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                         <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #333;">{{ $payment->tenant->name }}</h4>
-                                        <span id="status-badge-{{ $payment->paymentID }}" style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;
-                                            {{ $isVerified ? 'background-color: #d4edda; color: #155724;' : 
-                                               ($isRejected ? 'background-color: #f8d7da; color: #721c24;' : 'background-color: #cfe2ff; color: #084298;') }}">
+                                        <span id="status-badge-{{ $payment->paymentID }}"
+                                            class="px-3 py-1 rounded-full text-xs font-semibold
+                                            {{ $isVerified ? 'bg-green-100 text-green-700' :
+                                                ($isRejected ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700') }}">
                                             {{ $isVerified ? 'Verified' : ($isRejected ? 'Rejected' : 'Pending') }}
                                         </span>
                                     </div>
@@ -128,21 +143,32 @@
                                     </div>
                                 </div>
                                 
-                                <div id="action-buttons-{{ $payment->paymentID }}" style="display: flex; gap: 8px; align-items: start; margin-left: 15px;">
+                                <div id="action-buttons-{{ $payment->paymentID }}" class="flex gap-2">
+
                                     @if($payment->receiptImage)
-                                        <button onclick="viewReceipt('{{ asset('storage/' . $payment->receiptImage) }}')" 
-                                                style="padding: 6px 12px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap;">
-                                            View Receipt
+                                        <button onclick="viewReceipt('{{ asset('storage/' . $payment->receiptImage) }}')"
+                                                title="View Receipt"
+                                                class="btn-icon bg-gray-200 hover:bg-gray-300 text-gray-700">
+                                            <!-- eye icon -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path d="M2.458 12C3.732 7.943 7.523 5 12 5
+                                                        c4.478 0 8.268 2.943 9.542 7
+                                                        -1.274 4.057-5.064 7-9.542 7
+                                                        -4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
                                         </button>
                                     @endif
-                                    
+
                                     @if($isPending)
-                                        <button onclick="showActionModal({{ $payment->paymentID }}, '{{ $payment->tenant->name }}', {{ $payment->bill->amount }})" 
-                                                style="padding: 6px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap;">
-                                            Review
+                                        <button onclick="showActionModal({{ $payment->paymentID }}, '{{ $payment->tenant->name }}', {{ $payment->bill->amount }})"
+                                                title="Review Payment"
+                                                class="btn-icon bg-blue-200 hover:bg-blue-300 text-blue-700">
+                                            ✓
                                         </button>
                                     @else
-                                        <span style="font-size: 12px; color: #6c757d; font-style: italic;">No actions</span>
+                                        <span class="text-xs italic text-gray-400">No actions</span>
                                     @endif
                                 </div>
                             </div>
@@ -239,248 +265,8 @@
     gap: 8px;
 }
 </style>
+@endsection
 
-<script>
-let selectedPaymentId = null;
-
-function viewReceipt(receiptUrl) {
-    document.getElementById('modalReceipt').src = receiptUrl;
-    document.getElementById('receiptModal').style.display = 'flex';
-}
-
-function closeReceiptModal() {
-    document.getElementById('receiptModal').style.display = 'none';
-}
-
-document.getElementById('receiptModal').addEventListener('click', function(e) {
-    if (e.target === this) closeReceiptModal();
-});
-
-function showActionModal(paymentId, tenantName, amount) {
-    selectedPaymentId = paymentId;
-    document.getElementById('reviewTenantName').textContent = tenantName;
-    document.getElementById('reviewAmount').textContent = '₱' + parseFloat(amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('actionModal').style.display = 'flex';
-    document.getElementById('rejectReasonSection').style.display = 'none';
-    document.getElementById('confirmRejectBtn').style.display = 'none';
-    document.getElementById('rejectBtn').style.display = 'block';
-    document.getElementById('rejectionReason').value = '';
-    document.getElementById('rejection_reason_error').style.display = 'none';
-}
-
-function closeActionModal() {
-    document.getElementById('actionModal').style.display = 'none';
-    selectedPaymentId = null;
-}
-
-function toggleRejectReason() {
-    document.getElementById('rejectReasonSection').style.display = 'block';
-    document.getElementById('confirmRejectBtn').style.display = 'block';
-    document.getElementById('rejectBtn').style.display = 'none';
-}
-
-// AJAX Verify Payment
-function verifyPaymentAjax() {
-    if (!selectedPaymentId) return;
-    
-    const btn = document.getElementById('verifyBtn');
-    const btnText = btn.querySelector('.btn-text');
-    const btnLoading = btn.querySelector('.btn-loading');
-    
-    // Show loading
-    btn.disabled = true;
-    btnText.style.display = 'none';
-    btnLoading.style.display = 'inline-flex';
-    
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-    
-    fetch(`/admin/payments/${selectedPaymentId}/verify-ajax`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': token,
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Update card background
-            const card = document.getElementById(`payment-card-${selectedPaymentId}`);
-            card.style.backgroundColor = '#f0f9f4';
-            
-            // Update status badge
-            const badge = document.getElementById(`status-badge-${selectedPaymentId}`);
-            badge.textContent = 'Verified';
-            badge.style.backgroundColor = '#d4edda';
-            badge.style.color = '#155724';
-            
-            // Update action buttons
-            const actions = document.getElementById(`action-buttons-${selectedPaymentId}`);
-            const reviewBtn = actions.querySelector('button[onclick^="showActionModal"]');
-            if (reviewBtn) {
-                reviewBtn.outerHTML = '<span style="font-size: 12px; color: #6c757d; font-style: italic;">No actions</span>';
-            }
-            
-            // Close modal
-            closeActionModal();
-            
-            // Show success notification
-            showNotification('success', data.message);
-        } else {
-            showNotification('error', data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showNotification('error', 'Network error. Please try again.');
-    })
-    .finally(() => {
-        btn.disabled = false;
-        btnText.style.display = 'inline';
-        btnLoading.style.display = 'none';
-    });
-}
-
-// AJAX Reject Payment
-function rejectPaymentAjax() {
-    if (!selectedPaymentId) return;
-    
-    const reason = document.getElementById('rejectionReason').value.trim();
-    const errorSpan = document.getElementById('rejection_reason_error');
-    
-    if (!reason) {
-        errorSpan.textContent = 'Rejection reason is required.';
-        errorSpan.style.display = 'block';
-        return;
-    }
-    
-    const btn = document.getElementById('confirmRejectBtn');
-    const btnText = btn.querySelector('.btn-text');
-    const btnLoading = btn.querySelector('.btn-loading');
-    
-    // Show loading
-    btn.disabled = true;
-    btnText.style.display = 'none';
-    btnLoading.style.display = 'inline-flex';
-    errorSpan.style.display = 'none';
-    
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-    
-    fetch(`/admin/payments/${selectedPaymentId}/reject-ajax`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': token,
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-            rejection_reason: reason
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Update card background
-            const card = document.getElementById(`payment-card-${selectedPaymentId}`);
-            card.style.backgroundColor = '#fff5f5';
-            
-            // Update status badge
-            const badge = document.getElementById(`status-badge-${selectedPaymentId}`);
-            badge.textContent = 'Rejected';
-            badge.style.backgroundColor = '#f8d7da';
-            badge.style.color = '#721c24';
-            
-            // Show rejection reason
-            const rejectionBox = document.getElementById(`rejection-box-${selectedPaymentId}`);
-            rejectionBox.style.display = 'block';
-            document.getElementById(`rejection-reason-${selectedPaymentId}`).textContent = reason;
-            
-            // Update action buttons
-            const actions = document.getElementById(`action-buttons-${selectedPaymentId}`);
-            const reviewBtn = actions.querySelector('button[onclick^="showActionModal"]');
-            if (reviewBtn) {
-                reviewBtn.outerHTML = '<span style="font-size: 12px; color: #6c757d; font-style: italic;">No actions</span>';
-            }
-            
-            // Close modal
-            closeActionModal();
-            
-            // Show success notification
-            showNotification('success', data.message);
-        } else {
-            if (data.errors && data.errors.rejection_reason) {
-                errorSpan.textContent = data.errors.rejection_reason[0];
-                errorSpan.style.display = 'block';
-            } else {
-                showNotification('error', data.message);
-            }
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showNotification('error', 'Network error. Please try again.');
-    })
-    .finally(() => {
-        btn.disabled = false;
-        btnText.style.display = 'inline';
-        btnLoading.style.display = 'none';
-    });
-}
-
-// Show notification
-function showNotification(type, message) {
-    const existing = document.querySelector('.notification');
-    if (existing) existing.remove();
-    
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: ${type === 'success' ? '#d4edda' : '#f8d7da'};
-        color: ${type === 'success' ? '#155724' : '#721c24'};
-        padding: 15px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        z-index: 2000;
-        min-width: 300px;
-        max-width: 500px;
-        animation: slideIn 0.3s ease;
-        border-left: 4px solid ${type === 'success' ? '#28a745' : '#dc3545'};
-    `;
-    
-    notification.innerHTML = `
-        <svg style="width: 24px; height: 24px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            ${type === 'success' 
-                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
-                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
-            }
-        </svg>
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 20px; color: inherit; cursor: pointer; margin-left: auto; padding: 0; line-height: 1;">×</button>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
-
-const style = document.createElement('style');
-style.textContent = '@keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }';
-document.head.appendChild(style);
-
-window.onclick = function(event) {
-    if (event.target === document.getElementById('actionModal')) {
-        closeActionModal();
-    }
-}
-</script>
-
+@section('scripts')
+<script src="{{ asset('js/admin-payments.js') }}"></script>
 @endsection

@@ -1,171 +1,138 @@
 @extends('layouts.admin-layout')
 
 @section('content')
-<div class="content-header">
-    <h1>Maintenance Requests</h1>
-    <p>Manage and track all maintenance issues</p>
-</div>
+<div class="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[#f6f8f7]/80 to-[#E2E8E7]/80">
+    <div class="max-w-7xl mx-auto space-y-8">
 
-@if(session('success'))
-    <div style="background-color: #d4edda; color: #155724; padding: 12px 20px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #28a745;">
-        {{ session('success') }}
-    </div>
-@endif
+        <!-- Header -->
+        <div>
+            <h1 class="text-4xl font-bold text-[#135757] mb-1">Maintenance Requests</h1>
+            <p class="text-gray-600">Manage and track all maintenance issues</p>
+        </div>
 
-<div style="display: flex; gap: 20px;">
-    
-    <!-- Left Side - Stats Cards (20%) -->
-    <div style="width: 20%; min-width: 200px;">
+        <!-- Stats -->
         @php
             $pendingCount = $requests->where('status', 'pending')->count();
             $scheduledCount = $requests->where('status', 'scheduled')->count();
             $completedCount = $requests->where('status', 'completed')->count();
         @endphp
-        
-        <!-- Pending Card -->
-        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #ffc107; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                <div style="width: 40px; height: 40px; background-color: #fff3cd; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                    <svg style="width: 24px; height: 24px; color: #ffc107;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <p style="font-size: 28px; font-weight: bold; margin: 0; color: #333;">{{ $pendingCount }}</p>
-                </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-l-4 border-yellow-400">
+                <p class="text-xs uppercase tracking-wide text-gray-500">Pending</p>
+                <p class="mt-4 text-3xl font-bold text-yellow-500">{{ $pendingCount }}</p>
             </div>
-            <p style="font-size: 13px; color: #666; margin: 0; font-weight: 500;">Pending</p>
+
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-l-4 border-blue-500">
+                <p class="text-xs uppercase tracking-wide text-gray-500">Scheduled</p>
+                <p class="mt-4 text-3xl font-bold text-blue-600">{{ $scheduledCount }}</p>
+            </div>
+
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-l-4 border-green-500">
+                <p class="text-xs uppercase tracking-wide text-gray-500">Completed</p>
+                <p class="mt-4 text-3xl font-bold text-green-600">{{ $completedCount }}</p>
+            </div>
         </div>
 
-        <!-- Scheduled Card -->
-        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #007bff; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                <div style="width: 40px; height: 40px; background-color: #cfe2ff; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                    <svg style="width: 24px; height: 24px; color: #007bff;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <p style="font-size: 28px; font-weight: bold; margin: 0; color: #333;">{{ $scheduledCount }}</p>
-                </div>
+        <!-- Requests List -->
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">All Requests</h3>
             </div>
-            <p style="font-size: 13px; color: #666; margin: 0; font-weight: 500;">Scheduled</p>
-        </div>
 
-        <!-- Completed Card -->
-        <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                <div style="width: 40px; height: 40px; background-color: #d4edda; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                    <svg style="width: 24px; height: 24px; color: #28a745;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <p style="font-size: 28px; font-weight: bold; margin: 0; color: #333;">{{ $completedCount }}</p>
-                </div>
-            </div>
-            <p style="font-size: 13px; color: #666; margin: 0; font-weight: 500;">Completed</p>
-        </div>
-    </div>
+            <div class="max-h-[65vh] overflow-y-auto p-6 space-y-4">
+                @forelse($requests as $req)
+                <div id="request-card-{{ $req->requestID }}"
+                     class="rounded-xl border p-5
+                     {{ $req->status === 'completed' ? 'bg-green-50 border-green-200' :
+                        ($req->status === 'scheduled' ? 'bg-blue-50 border-blue-200' : 'bg-yellow-50 border-yellow-200') }}">
 
-    <!-- Right Side - Requests List (80%) -->
-    <div style="flex: 1;">
-        <div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: calc(100vh - 200px); display: flex; flex-direction: column;">
-            <div style="padding: 20px; border-bottom: 1px solid #e0e0e0;">
-                <h3 style="margin: 0; font-size: 18px; color: #333;">All Requests</h3>
-            </div>
-            
-            <div style="flex: 1; overflow-y: auto; padding: 20px;">
-                @if($requests->count() > 0)
-                    <div style="display: flex; flex-direction: column; gap: 15px;">
-                        @foreach($requests as $req)
-                        <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px;
-                            {{ $req->status === 'completed' ? 'background-color: #f0f9f4;' : 
-                               ($req->status === 'scheduled' ? 'background-color: #f0f7ff;' : 'background-color: #fffbf0;') }}">
-                            
-                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
-                                <div style="flex: 1;">
-                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                        <h4 style="margin: 0; font-size: 15px; font-weight: 600; color: #333;">{{ $req->tenant->name }}</h4>
-                                        <span style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 500;
-                                            {{ $req->status === 'completed' ? 'background-color: #d4edda; color: #155724;' : 
-                                               ($req->status === 'scheduled' ? 'background-color: #cfe2ff; color: #084298;' : 'background-color: #fff3cd; color: #856404;') }}">
-                                            {{ ucfirst($req->status) }}
-                                        </span>
-                                    </div>
-                                    <p style="margin: 0 0 8px 0; color: #555; font-size: 14px; line-height: 1.5;">{{ $req->description }}</p>
-                                    <p style="margin: 0; font-size: 12px; color: #999;">
-                                        <svg style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        Reported: {{ date('M d, Y h:i A', strtotime($req->created_at)) }}
-                                    </p>
-                                </div>
-                                
-                                <div style="display: flex; gap: 8px; align-items: center; margin-left: 15px;">
-                                    @if($req->photo)
-                                        <button onclick="viewImage('{{ asset('storage/' . $req->photo) }}')" 
-                                                style="padding: 6px 12px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap;">
-                                            View Image
-                                        </button>
-                                    @endif
-                                    
-                                    <form method="POST" action="{{ route('admin.update-maintenance', $req->requestID) }}" style="display: flex; gap: 8px;">
-                                        @csrf
-                                        <select name="status" style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px;">
-                                            <option value="pending" {{ $req->status === 'pending' ? 'selected' : '' }}>Pending</option>
-                                            <option value="scheduled" {{ $req->status === 'scheduled' ? 'selected' : '' }}>Scheduled</option>
-                                        </select>
-                                        <button type="submit" 
-                                                style="padding: 6px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap;">
-                                            Update
-                                        </button>
-                                    </form>
-                                </div>
+                    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex flex-wrap items-center gap-3 mb-2">
+                                <h4 class="font-semibold text-gray-800">{{ $req->tenant->name }}</h4>
+                                <span id="status-badge-{{ $req->requestID }}"
+                                      class="px-3 py-1 rounded-full text-xs font-semibold
+                                      {{ $req->status === 'completed' ? 'bg-green-100 text-green-700' :
+                                         ($req->status === 'scheduled' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700') }}">
+                                    {{ ucfirst($req->status) }}
+                                </span>
                             </div>
+
+                            <p class="text-sm text-gray-700 mb-2">{{ $req->description }}</p>
+
+                            <p class="text-xs text-gray-400">
+                                Reported: {{ date('M d, Y h:i A', strtotime($req->created_at)) }}
+                            </p>
                         </div>
-                        @endforeach
+
+                        <div class="flex flex-wrap items-center gap-2">
+                            @if($req->photo)
+                            <button onclick="viewImage('{{ asset('storage/' . $req->photo) }}')"
+                                    title="View Image"
+                                    class="w-9 h-9 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-700 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path d="M2.458 12C3.732 7.943 7.523 5 12 5
+                                             c4.478 0 8.268 2.943 9.542 7
+                                             -1.274 4.057-5.064 7-9.542 7
+                                             -4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                            @endif
+
+                            @if($req->status !== 'completed')
+                            <form method="POST" action="{{ route('admin.update-maintenance', $req->requestID) }}"
+                                  class="flex items-center gap-2">
+                                @csrf
+                                <select name="status"
+                                        class="px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#135757]">
+                                    <option value="pending" {{ $req->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                                    <option value="scheduled" {{ $req->status === 'scheduled' ? 'selected' : '' }}>Scheduled</option>
+                                </select>
+                                <button type="submit"
+                                        class="px-4 py-2 bg-[#135757] text-white text-sm font-semibold rounded-lg hover:opacity-90">
+                                    Update
+                                </button>
+                            </form>
+                            @else
+                            <span class="text-xs italic text-gray-400">No actions</span>
+                            @endif
+                        </div>
                     </div>
-                @else
-                    <div style="text-align: center; padding: 60px 20px; color: #999;">
-                        <svg style="width: 64px; height: 64px; margin: 0 auto 15px; opacity: 0.3;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <p style="font-size: 16px; margin: 0;">No maintenance requests found</p>
-                    </div>
-                @endif
+                </div>
+                @empty
+                <div class="py-16 text-center text-gray-400">
+                    No maintenance requests found
+                </div>
+                @endforelse
             </div>
         </div>
     </div>
 </div>
 
-<!-- Image Viewer Modal -->
-<div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="position: relative; max-width: 90%; max-height: 90%;">
-        <button onclick="closeImageModal()" 
-                style="position: absolute; top: -40px; right: 0; background: white; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 20px; color: #333;">
+<!-- Image Modal -->
+<div id="imageModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+    <div class="relative max-w-4xl w-full">
+        <button onclick="closeImageModal()"
+                class="absolute -top-10 right-0 w-9 h-9 rounded-full bg-white text-gray-700 text-xl flex items-center justify-center">
             ×
         </button>
-        <img id="modalImage" src="" style="max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+        <img id="modalImage" src="" class="max-h-[80vh] mx-auto rounded-xl shadow-2xl">
     </div>
 </div>
 
 <script>
-function viewImage(imageUrl) {
-    document.getElementById('modalImage').src = imageUrl;
-    document.getElementById('imageModal').style.display = 'flex';
+function viewImage(url) {
+    document.getElementById('modalImage').src = url;
+    document.getElementById('imageModal').classList.remove('hidden');
 }
-
 function closeImageModal() {
-    document.getElementById('imageModal').style.display = 'none';
+    document.getElementById('imageModal').classList.add('hidden');
 }
-
-// Close modal when clicking outside the image
-document.getElementById('imageModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeImageModal();
-    }
+document.getElementById('imageModal').addEventListener('click', e => {
+    if (e.target.id === 'imageModal') closeImageModal();
 });
 </script>
-
 @endsection
