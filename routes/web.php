@@ -82,6 +82,34 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('view-maintenance');
     Route::post('/update-maintenance/{requestID}', [App\Http\Controllers\AdminController::class, 'updateMaintenanceStatus'])
         ->name('update-maintenance');
+
+
+
+    // In routes/web.php - TEMPORARY TEST ROUTE
+    Route::get('/test-chart-data', function() {
+        $totalTenants = \App\Models\User::where('role', 'tenant')->count();
+        
+        $tenantsFullyPaid = \App\Models\User::where('role', 'tenant')
+            ->whereDoesntHave('bills', function($query) {
+                $query->whereIn('status', ['pending', 'paid']);
+            })
+            ->count();
+
+        $tenantsWithPending = \App\Models\User::where('role', 'tenant')
+            ->whereHas('bills', function($query) {
+                $query->whereIn('status', ['pending', 'paid']);
+            })
+            ->count();
+
+        return [
+            'total' => $totalTenants,
+            'fullyPaid' => $tenantsFullyPaid,
+            'withPending' => $tenantsWithPending,
+            'all_tenants' => \App\Models\User::where('role', 'tenant')->with('bills')->get()
+        ];
+    });
+
+    
 });
 
 

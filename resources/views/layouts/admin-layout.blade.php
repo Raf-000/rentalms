@@ -103,5 +103,6 @@
     </div>
 
     <script src="{{ asset('js/admin-layout.js') }}"></script>
+    @yield('scripts')
 </body>
 </html>

@@ -334,9 +334,12 @@
 <!-- Revenue Chart & Quick Actions -->
 <div class="dashboard-grid">
     <div class="chart-card">
-        <div class="chart-card">
         <h3>Tenant Payment Status</h3>
-        <canvas id="paymentStatusChart" width="400" height="200"></canvas>
+        
+
+        <div style="position: relative; height: 200px; width: 100%;">
+            <canvas id="paymentStatusChart"></canvas>
+        </div>
         
         <div style="margin-top: 20px; display: flex; gap: 20px; justify-content: center;">
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -351,7 +354,6 @@
                 <div style="width: 12px; height: 12px; background-color: #ffc107; border-radius: 3px;"></div>
                 <span style="font-size: 13px; color: #666;">With Pending Bills</span>
             </div>
-        </div>
     </div>
     </div>
     
@@ -451,82 +453,107 @@
 @endsection
 
 @section('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-// Tenant Payment Status Chart
-const ctx = document.getElementById('paymentStatusChart');
-if (ctx) {
-    const paymentStatusData = @json($paymentStatusData);
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Loaded');
     
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Total Tenants', 'Fully Paid', 'With Pending Bills'],
-            datasets: [{
-                label: 'Count',
-                data: [
-                    paymentStatusData.total,
-                    paymentStatusData.fullyPaid,
-                    paymentStatusData.withPending
-                ],
-                backgroundColor: [
-                    'rgba(0, 123, 255, 0.8)',
-                    'rgba(40, 167, 69, 0.8)',
-                    'rgba(255, 193, 7, 0.8)'
-                ],
-                borderColor: [
-                    '#007bff',
-                    '#28a745',
-                    '#ffc107'
-                ],
-                borderWidth: 2,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    padding: 12,
-                    titleFont: {
-                        size: 14
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
-                    callbacks: {
-                        label: function(context) {
-                            return 'Count: ' + context.parsed.y + ' tenant(s)';
-                        }
-                    }
-                }
+    const ctx = document.getElementById('paymentStatusChart');
+    console.log('Canvas element:', ctx);
+    console.log('Chart available:', typeof Chart);
+    
+    if (!ctx) {
+        console.error('Canvas not found!');
+        return;
+    }
+    
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js not loaded!');
+        return;
+    }
+    
+    const paymentStatusData = @json($paymentStatusData);
+    console.log('Data:', paymentStatusData);
+    
+    try {
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Total Tenants', 'Fully Paid', 'With Pending Bills'],
+                datasets: [{
+                    label: 'Number of Tenants',
+                    data: [
+                        paymentStatusData.total,
+                        paymentStatusData.fullyPaid,
+                        paymentStatusData.withPending
+                    ],
+                    backgroundColor: [
+                        'rgba(0, 123, 255, 0.8)',
+                        'rgba(40, 167, 69, 0.8)',
+                        'rgba(255, 193, 7, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgb(0, 123, 255)',
+                        'rgb(40, 167, 69)',
+                        'rgb(255, 193, 7)'
+                    ],
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    barPercentage: 0.6
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        callback: function(value) {
-                            return Math.floor(value);
-                        }
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
                     },
-                    grid: {
-                        color: 'rgba(0,0,0,0.05)'
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                return 'Count: ' + context.parsed.y + ' tenant(s)';
+                            }
+                        }
                     }
                 },
-                x: {
-                    grid: {
-                        display: false
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                if (Math.floor(value) === value) {
+                                    return value;
+                                }
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
                     }
                 }
             }
-        }
-    });
-}
+        });
+        
+        console.log('Chart created successfully:', chart);
+        
+    } catch (error) {
+        console.error('Chart creation error:', error);
+    }
+});
 </script>
 @endsection
