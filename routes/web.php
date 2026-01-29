@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Route;
 // PUBLIC ROUTES
 // ============================================
 
+// ============================================
+// PUBLIC ROUTES
+// ============================================
+
 Route::get('/', function () {
     return view('homepage');
 });
@@ -44,6 +48,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // View Tenants
     Route::get('/view-tenants', [App\Http\Controllers\AdminController::class, 'viewTenants'])
         ->name('view-tenants');
+    // View Tenants
+    Route::get('/view-tenants', [App\Http\Controllers\AdminController::class, 'viewTenants'])
+        ->name('view-tenants');
 
     // Issue Bill
     Route::get('/issue-bill', [App\Http\Controllers\AdminController::class, 'showIssueBill'])
@@ -65,6 +72,17 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::delete('/bills/{billID}', [App\Http\Controllers\AdminController::class, 'voidBill'])
         ->name('bills.void');
 
+    // View Payments
+    Route::get('/view-payments', [App\Http\Controllers\AdminController::class, 'viewPayments'])
+        ->name('view-payments');
+    Route::post('/verify-payment/{paymentID}', [App\Http\Controllers\AdminController::class, 'verifyPayment'])
+        ->name('verify-payment');
+    
+    // AJAX Payment Actions
+    Route::post('/payments/{payment}/verify-ajax', [App\Http\Controllers\AdminController::class, 'verifyPaymentAjax'])
+        ->name('payments.verify-ajax');
+    Route::post('/payments/{payment}/reject-ajax', [App\Http\Controllers\AdminController::class, 'rejectPaymentAjax'])
+        ->name('payments.reject-ajax');
     // View Payments
     Route::get('/view-payments', [App\Http\Controllers\AdminController::class, 'viewPayments'])
         ->name('view-payments');
@@ -127,6 +145,11 @@ Route::middleware(['auth'])->prefix('tenant')->name('tenant.')->group(function (
         ->name('view-bills');
     Route::post('/upload-payment/{billID}', [App\Http\Controllers\TenantController::class, 'uploadPayment'])
         ->name('upload-payment');
+    // View Bills
+    Route::get('/view-bills', [App\Http\Controllers\TenantController::class, 'viewBills'])
+        ->name('view-bills');
+    Route::post('/upload-payment/{billID}', [App\Http\Controllers\TenantController::class, 'uploadPayment'])
+        ->name('upload-payment');
 
     // Maintenance Requests
     Route::get('/create-maintenance', [App\Http\Controllers\TenantController::class, 'showCreateMaintenance'])
@@ -156,5 +179,4 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
 require __DIR__.'/auth.php';

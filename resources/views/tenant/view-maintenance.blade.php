@@ -4,6 +4,10 @@
 <link rel="stylesheet" href="{{ asset('css/tenant-maintenance.css') }}">
 @endsection
 
+@section('extra-css')
+<link rel="stylesheet" href="{{ asset('css/tenant-maintenance.css') }}">
+@endsection
+
 @section('content')
 <div class="content-header">
     <h1>Maintenance Report</h1>
@@ -210,7 +214,10 @@ document.getElementById('photoModal')?.addEventListener('click', function(e) {
 });
 </script>
 @endsection
+@endsection
 
+@section('scripts')
+<script src="{{ asset('js/tenant-maintenance.js') }}"></script>
 @section('scripts')
 <script src="{{ asset('js/tenant-maintenance.js') }}"></script>
 @endsection
