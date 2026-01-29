@@ -20,7 +20,7 @@
 
         /* Header */
         .header {
-            background-color: white;
+            background-color: #135757;
             border-bottom: 1px solid #ddd;
             padding: 15px 30px;
             display: flex;
@@ -43,7 +43,7 @@
         .logo {
             font-size: 20px;
             font-weight: bold;
-            color: #333;
+            color: white;
             text-decoration: none;
         }
 
@@ -64,6 +64,22 @@
         .user-menu:hover {
             background-color: #e0e0e0;
         }
+
+        .dropdown a,
+        .dropdown button {
+            display: block;
+            padding: 10px 15px;
+            text-decoration: none;
+            color: #333;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;       /* ensure same font size */
+            font-family: inherit;  /* inherit same font family */
+        }
+
 
         .dropdown {
             display: none;

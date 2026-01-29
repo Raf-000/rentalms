@@ -158,6 +158,7 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
     margin-top: 15px;
+    width: 100%;
 }
 
 .action-btn {
