@@ -1,138 +1,170 @@
 @extends('layouts.admin-layout')
 
 @section('content')
-<div class="content-header">
-    <h1>Edit Booking</h1>
-    <p>Update booking details</p>
-</div>
-
-<div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 700px;">
-    <form method="POST" action="{{ route('admin.bookings.update', $booking->id) }}">
-        @csrf
-        @method('PUT')
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-            <!-- Name -->
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Full Name *</label>
-                <input type="text" name="name" value="{{ old('name', $booking->name) }}" required
-                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                @error('name')
-                    <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Gender -->
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Gender *</label>
-                <select name="gender" required
-                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                    <option value="male" {{ old('gender', $booking->gender) == 'male' ? 'selected' : '' }}>Male</option>
-                    <option value="female" {{ old('gender', $booking->gender) == 'female' ? 'selected' : '' }}>Female</option>
-                </select>
-                @error('gender')
-                    <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-                @enderror
-            </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-            <!-- Email -->
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Email *</label>
-                <input type="email" name="email" value="{{ old('email', $booking->email) }}" required
-                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                @error('email')
-                    <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Phone -->
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Phone *</label>
-                <input type="text" name="phone" value="{{ old('phone', $booking->phone) }}" required
-                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                @error('phone')
-                    <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-                @enderror
-            </div>
-        </div>
-
-        <!-- Bedspace -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Bedspace to View *</label>
-            <select name="bedspace_id" required
-                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                @foreach($bedspaces as $bedspace)
-                    <option value="{{ $bedspace->unitID }}" {{ old('bedspace_id', $booking->bedspace_id) == $bedspace->unitID ? 'selected' : '' }}>
-                        {{ $bedspace->unitCode }} - House {{ $bedspace->houseNo }}, Floor {{ $bedspace->floor }}, Room {{ $bedspace->roomNo }}, Bed {{ $bedspace->bedspaceNo }} (₱{{ number_format($bedspace->price, 0) }})
-                    </option>
-                @endforeach
-            </select>
-            @error('bedspace_id')
-                <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-            <!-- Preferred Date -->
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Preferred Date *</label>
-                <input type="date" name="preferred_date" value="{{ old('preferred_date', $booking->preferred_date->format('Y-m-d')) }}" required
-                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                @error('preferred_date')
-                    <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Preferred Time -->
-            <div>
-                <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Preferred Time (Optional)</label>
-                <input type="text" name="preferred_time" value="{{ old('preferred_time', $booking->preferred_time) }}" 
-                       placeholder="e.g., 10:00 AM - 12:00 PM"
-                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                @error('preferred_time')
-                    <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-                @enderror
-            </div>
-        </div>
-
-        <!-- Message -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Additional Notes (Optional)</label>
-            <textarea name="message" rows="3"
-                      style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial, sans-serif; font-size: 14px;">{{ old('message', $booking->message) }}</textarea>
-            @error('message')
-                <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <!-- Status -->
-        <div style="margin-bottom: 30px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Status *</label>
-            <select name="status" required
-                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                <option value="pending" {{ old('status', $booking->status ?? 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="confirmed" {{ old('status', $booking->status ?? '') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                <option value="completed" {{ old('status', $booking->status ?? '') == 'completed' ? 'selected' : '' }}>Completed</option>
-                <option value="cancelled" {{ old('status', $booking->status ?? '') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-            </select>
-            @error('status')
-                <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <!-- Buttons -->
-        <div style="display: flex; gap: 10px;">
-            <a href="{{ route('admin.bookings.index') }}" 
-               style="flex: 1; padding: 12px; background-color: #6c757d; color: white; border: none; border-radius: 6px; text-decoration: none; text-align: center; font-size: 15px;">
-                Cancel
+<div class="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style="background: linear-gradient(to bottom, rgba(246, 248, 247, 0.85), rgba(226, 232, 231, 0.85)); backdrop-filter: blur(5px);">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header with Back Button -->
+        <div class="mb-8 flex items-center gap-4">
+            <a href="{{ route('admin.bookings.index') }}" class="w-10 h-10 rounded-lg bg-white/95 backdrop-blur-sm border-2 border-[#E2E8E7] flex items-center justify-center hover:border-[#135757] hover:bg-[#135757] hover:text-white transition-all duration-300">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
             </a>
-            <button type="submit" 
-                    style="flex: 1; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px;">
-                Update Booking
-            </button>
+            <div>
+                <h1 class="text-4xl font-bold text-[#135757] mb-1">Edit Booking</h1>
+                <p class="text-gray-700 text-lg font-medium">Update booking #{{ $booking->id }} details</p>
+            </div>
         </div>
-    </form>
+
+        <!-- Main Form Card -->
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden">
+            <div class="p-8">
+                <form method="POST" action="{{ route('admin.bookings.update', $booking->id) }}">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="space-y-6">
+                        <!-- Name & Gender Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-[#135757] mb-2">
+                                    Full Name <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="name" value="{{ old('name', $booking->name) }}" required
+                                       class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                                @error('name')
+                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-[#135757] mb-2">
+                                    Gender <span class="text-red-500">*</span>
+                                </label>
+                                <select name="gender" required
+                                        class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                                    <option value="male" {{ old('gender', $booking->gender) == 'male' ? 'selected' : '' }}>Male</option>
+                                    <option value="female" {{ old('gender', $booking->gender) == 'female' ? 'selected' : '' }}>Female</option>
+                                </select>
+                                @error('gender')
+                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Email & Phone Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-[#135757] mb-2">
+                                    Email Address <span class="text-red-500">*</span>
+                                </label>
+                                <input type="email" name="email" value="{{ old('email', $booking->email) }}" required
+                                       class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                                @error('email')
+                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-[#135757] mb-2">
+                                    Phone Number <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="phone" value="{{ old('phone', $booking->phone) }}" required
+                                       class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                                @error('phone')
+                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Bedspace -->
+                        <div>
+                            <label class="block text-sm font-semibold text-[#135757] mb-2">
+                                Bedspace to View <span class="text-red-500">*</span>
+                            </label>
+                            <select name="bedspace_id" required
+                                    class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                                @foreach($bedspaces as $bedspace)
+                                    <option value="{{ $bedspace->unitID }}" {{ old('bedspace_id', $booking->bedspace_id) == $bedspace->unitID ? 'selected' : '' }}>
+                                        {{ $bedspace->unitCode }} - House {{ $bedspace->houseNo }}, Floor {{ $bedspace->floor }}, Room {{ $bedspace->roomNo }}, Bed {{ $bedspace->bedspaceNo }} (₱{{ number_format($bedspace->price, 0) }}/mo)
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('bedspace_id')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Date & Time Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-[#135757] mb-2">
+                                    Preferred Date <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date" name="preferred_date" value="{{ old('preferred_date', $booking->preferred_date->format('Y-m-d')) }}" required
+                                       class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                                @error('preferred_date')
+                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-[#135757] mb-2">
+                                    Preferred Time (Optional)
+                                </label>
+                                <input type="text" name="preferred_time" value="{{ old('preferred_time', $booking->preferred_time) }}" 
+                                       placeholder="e.g., 10:00 AM - 12:00 PM"
+                                       class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                                @error('preferred_time')
+                                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- Message -->
+                        <div>
+                            <label class="block text-sm font-semibold text-[#135757] mb-2">
+                                Additional Notes (Optional)
+                            </label>
+                            <textarea name="message" rows="3"
+                                      class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">{{ old('message', $booking->message) }}</textarea>
+                            @error('message')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Status -->
+                        <div>
+                            <label class="block text-sm font-semibold text-[#135757] mb-2">
+                                Status <span class="text-red-500">*</span>
+                            </label>
+                            <select name="status" required
+                                    class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                                <option value="pending" {{ old('status', $booking->status) == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="confirmed" {{ old('status', $booking->status) == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                <option value="completed" {{ old('status', $booking->status) == 'completed' ? 'selected' : '' }}>Completed</option>
+                                <option value="cancelled" {{ old('status', $booking->status) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            </select>
+                            @error('status')
+                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex gap-4 pt-6">
+                            <a href="{{ route('admin.bookings.index') }}" 
+                               class="flex-1 px-6 py-4 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-200 text-center">
+                                Cancel
+                            </a>
+                            <button type="submit"
+                                    class="flex-1 px-6 py-4 bg-gradient-to-r from-[#135757] to-[#1a7272] text-white font-semibold rounded-lg hover:shadow-lg transform hover:-translate-y-0.5 transition duration-200">
+                                Update Booking
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

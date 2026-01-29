@@ -1,379 +1,276 @@
 @extends('layouts.admin-layout')
 
-@section('extra-css')
+@section('content')
+<!-- Success Notification -->
+@if(session('success'))
+<div id="successNotification" class="fixed top-20 left-1/2 transform -translate-x-1/2 -translate-y-32 transition-all duration-500 ease-out z-[10000]">
+    <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border-l-4 border-green-500 px-6 py-4 flex items-center gap-4 min-w-[400px]">
+        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        </div>
+        <div class="flex-1">
+            <p class="font-semibold text-[#135757] text-lg">Success!</p>
+            <p class="text-gray-600 text-sm">{{ session('success') }}</p>
+        </div>
+        <button onclick="closeNotification()" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notification = document.getElementById('successNotification');
+    if (notification) {
+        setTimeout(() => {
+            notification.style.transform = 'translateX(-50%) translateY(0)';
+        }, 100);
+        
+        setTimeout(() => {
+            closeNotification();
+        }, 5000);
+    }
+});
+
+function closeNotification() {
+    const notification = document.getElementById('successNotification');
+    if (notification) {
+        notification.style.transform = 'translateX(-50%) translateY(-8rem)';
+        setTimeout(() => {
+            notification.remove();
+        }, 500);
+    }
+}
+</script>
+@endif
+
+<div class="min-h-screen py-8 px-4 sm:px-6 lg:px-8" style="background: linear-gradient(to bottom, rgba(246, 248, 247, 0.85), rgba(226, 232, 231, 0.85)); backdrop-filter: blur(5px);">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-4xl font-bold text-[#135757] mb-2">Viewing Bookings</h1>
+                <p class="text-gray-700 text-lg font-medium">Manage room viewing appointments</p>
+            </div>
+            <a href="{{ route('admin.bookings.create') }}"
+               class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#135757] to-[#1a7272] text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add Booking
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-l-4 border-green-500 hover:shadow-xl transition-all duration-300">
+                <p class="text-xs uppercase tracking-wide text-gray-600 font-semibold mb-2">Viewings This Month</p>
+                <p class="text-4xl font-bold text-green-600">{{ $stats['thisMonth'] }}</p>
+                <p class="text-sm text-gray-500 mt-1">{{ now()->format('F Y') }}</p>
+            </div>
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-l-4 border-yellow-500 hover:shadow-xl transition-all duration-300">
+                <p class="text-xs uppercase tracking-wide text-gray-600 font-semibold mb-2">Pending Confirmation</p>
+                <p class="text-4xl font-bold text-yellow-600">{{ $stats['pending'] }}</p>
+                <p class="text-sm text-gray-500 mt-1">Awaiting response</p>
+            </div>
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-lg border-l-4 border-blue-500 hover:shadow-xl transition-all duration-300">
+                <p class="text-xs uppercase tracking-wide text-gray-600 font-semibold mb-2">Confirmed Viewings</p>
+                <p class="text-4xl font-bold text-blue-600">{{ $stats['confirmed'] }}</p>
+                <p class="text-sm text-gray-500 mt-1">Scheduled appointments</p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white/95 backdrop-blur-sm p-6 rounded-2xl shadow-lg mb-6">
+            <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+                <div>
+                    <label class="block text-sm font-semibold text-[#135757] mb-2">Status</label>
+                    <select name="status" class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                        <option value="">All Statuses</option>
+                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-[#135757] mb-2">From Date</label>
+                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-[#135757] mb-2">To Date</label>
+                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg focus:outline-none focus:border-[#135757] transition duration-200 bg-white">
+                </div>
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 px-4 py-3 bg-gradient-to-r from-[#135757] to-[#1a7272] text-white rounded-lg hover:shadow-lg transition-all duration-200 font-semibold">
+                        Filter
+                    </button>
+                    <a href="{{ route('admin.bookings.index') }}" class="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-200 font-semibold">
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Bookings Table -->
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="bg-[#f6f8f7]">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-[#135757] uppercase tracking-wider">ID</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-[#135757] uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-[#135757] uppercase tracking-wider">Contact</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-[#135757] uppercase tracking-wider">Bedspace</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-[#135757] uppercase tracking-wider">Viewing Date</th>
+                            <th class="px-6 py-4 text-center text-xs font-bold text-[#135757] uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-center text-xs font-bold text-[#135757] uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @forelse($bookings as $booking)
+                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ $booking->id }}</td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-semibold text-[#135757]">{{ $booking->name }}</div>
+                                <div class="text-xs text-gray-500">{{ ucfirst($booking->gender) }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-700">{{ $booking->email }}</div>
+                                <div class="text-xs text-gray-500">{{ $booking->phone }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="text-sm font-semibold text-[#135757]">{{ $booking->bedspace->unitCode ?? 'N/A' }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">{{ \Carbon\Carbon::parse($booking->preferred_date)->format('M d, Y') }}</div>
+                                @if($booking->preferred_time)
+                                <div class="text-xs text-gray-500">{{ $booking->preferred_time }}</div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="px-3 py-1 rounded-full text-xs font-bold uppercase
+                                    {{ $booking->status == 'confirmed' ? 'bg-green-100 text-green-700' :
+                                       ($booking->status == 'completed' ? 'bg-blue-100 text-blue-700' :
+                                       ($booking->status == 'cancelled' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700')) }}">
+                                    {{ $booking->status }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex justify-center gap-2">
+                                    <!-- Edit -->
+                                    <a href="{{ route('admin.bookings.edit', $booking->id) }}" 
+                                       class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-200 flex items-center justify-center"
+                                       title="Edit">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </a>
+                                    
+                                    @if($booking->status == 'pending')
+                                    <button onclick="showConfirmModal({{ $booking->id }}, '{{ $booking->name }}')" 
+                                            class="w-8 h-8 rounded-lg bg-green-100 text-green-600 hover:bg-green-600 hover:text-white transition-all duration-200 flex items-center justify-center"
+                                            title="Confirm">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </button>
+                                    @elseif($booking->status == 'confirmed')
+                                    <button onclick="showCompleteModal({{ $booking->id }}, '{{ $booking->name }}')" 
+                                            class="w-8 h-8 rounded-lg bg-teal-100 text-teal-600 hover:bg-teal-600 hover:text-white transition-all duration-200 flex items-center justify-center"
+                                            title="Complete">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </button>
+                                    @endif
+                                    
+                                    @if(!in_array($booking->status, ['completed','cancelled']))
+                                    <button onclick="showCancelModal({{ $booking->id }}, '{{ $booking->name }}')" 
+                                            class="w-8 h-8 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-600 hover:text-white transition-all duration-200 flex items-center justify-center"
+                                            title="Cancel">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                    @endif
+                                    
+                                    <button onclick="showDeleteModal({{ $booking->id }}, '{{ $booking->name }}')" 
+                                            class="w-8 h-8 rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition-all duration-200 flex items-center justify-center"
+                                            title="Delete">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="py-16 text-center text-gray-400 text-lg">
+                                <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                No bookings found
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
 <style>
-.action-icon-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-}
-
-.action-icon-btn svg {
-    width: 16px;
-    height: 16px;
-}
-
-.action-icon-btn:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.9);
-    color: white;
-    padding: 6px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    margin-bottom: 5px;
-    z-index: 1000;
-    pointer-events: none;
-}
-
-.action-icon-btn:hover::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: rgba(0, 0, 0, 0.9);
-    margin-bottom: -5px;
-    pointer-events: none;
-}
-
-.btn-edit {
-    background-color: #007bff;
-    color: white;
-}
-
-.btn-edit:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-}
-
-.btn-confirm {
-    background-color: #28a745;
-    color: white;
-}
-
-.btn-confirm:hover {
-    background-color: #1e7e34;
-    transform: translateY(-2px);
-}
-
-.btn-complete {
-    background-color: #17a2b8;
-    color: white;
-}
-
-.btn-complete:hover {
-    background-color: #138496;
-    transform: translateY(-2px);
-}
-
-.btn-cancel-action {
-    background-color: #ffc107;
-    color: #333;
-}
-
-.btn-cancel-action:hover {
-    background-color: #e0a800;
-    transform: translateY(-2px);
-}
-
-.btn-delete {
-    background-color: #dc3545;
-    color: white;
-}
-
-.btn-delete:hover {
-    background-color: #c82333;
-    transform: translateY(-2px);
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.stat-card-booking {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border-left: 4px solid;
-    transition: transform 0.2s;
-}
-
-.stat-card-booking:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.stat-card-booking.green { border-left-color: #28a745; }
-.stat-card-booking.blue { border-left-color: #007bff; }
-.stat-card-booking.teal { border-left-color: #17a2b8; }
-
-.stat-value-booking {
-    font-size: 32px;
-    font-weight: bold;
-    margin: 10px 0 5px 0;
-}
-
-.stat-label-booking {
-    font-size: 13px;
-    color: #666;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-/* Modal Styles */
-.modal {
+.modal-overlay {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 1000;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
     align-items: center;
     justify-content: center;
+    backdrop-filter: blur(3px);
 }
 
-.modal.show {
+.modal-overlay.show {
     display: flex;
 }
-
-@media (max-width: 768px) {
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-}
 </style>
-@endsection
-
-@section('content')
-<div class="content-header">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-        <div>
-            <h1>Viewing Bookings</h1>
-            <p>Manage room viewing appointments</p>
-        </div>
-        <a href="{{ route('admin.bookings.create') }}" 
-           style="padding: 12px 24px; background-color: #28a745; color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">
-            + Add Booking
-        </a>
-    </div>
-</div>
-
-@if(session('success'))
-    <div style="background-color: #d4edda; color: #155724; padding: 12px 20px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #28a745;">
-        {{ session('success') }}
-    </div>
-@endif
-
-<!-- Stats Cards -->
-<div class="stats-grid">
-    <div class="stat-card-booking green">
-        <p class="stat-label-booking">Viewings This Month</p>
-        <p class="stat-value-booking">{{ $stats['thisMonth'] }}</p>
-        <p style="font-size: 12px; color: #666; margin: 0;">{{ now()->format('F Y') }}</p>
-    </div>
-    
-    <div class="stat-card-booking blue">
-        <p class="stat-label-booking">Pending Confirmation</p>
-        <p class="stat-value-booking">{{ $stats['pending'] }}</p>
-        <p style="font-size: 12px; color: #666; margin: 0;">Awaiting response</p>
-    </div>
-    
-    <div class="stat-card-booking teal">
-        <p class="stat-label-booking">Confirmed Viewings</p>
-        <p class="stat-value-booking">{{ $stats['confirmed'] }}</p>
-        <p style="font-size: 12px; color: #666; margin: 0;">Scheduled appointments</p>
-    </div>
-</div>
-
-<!-- Filters -->
-<div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px;">
-    <form method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end;">
-        <div>
-            <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 500;">Status</label>
-            <select name="status" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                <option value="">All Statuses</option>
-                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-            </select>
-        </div>
-        
-        <div>
-            <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 500;">From Date</label>
-            <input type="date" name="date_from" value="{{ request('date_from') }}" 
-                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-        </div>
-        
-        <div>
-            <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 500;">To Date</label>
-            <input type="date" name="date_to" value="{{ request('date_to') }}" 
-                   style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-        </div>
-        
-        <div style="display: flex; gap: 10px;">
-            <button type="submit" 
-                    style="padding: 8px 20px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Filter
-            </button>
-            <a href="{{ route('admin.bookings.index') }}" 
-               style="padding: 8px 20px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">
-                Reset
-            </a>
-        </div>
-    </form>
-</div>
-
-<!-- Bookings Table -->
-<div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow-x: auto;">
-    <table style="width: 100%; border-collapse: collapse; min-width: 900px;">
-        <thead style="background-color: #f8f9fa;">
-            <tr>
-                <th style="padding: 12px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">ID</th>
-                <th style="padding: 12px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Name</th>
-                <th style="padding: 12px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Contact</th>
-                <th style="padding: 12px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Bedspace</th>
-                <th style="padding: 12px; text-align: left; font-size: 13px; color: #666; font-weight: 600;">Viewing Date</th>
-                <th style="padding: 12px; text-align: center; font-size: 13px; color: #666; font-weight: 600;">Status</th>
-                <th style="padding: 12px; text-align: center; font-size: 13px; color: #666; font-weight: 600;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($bookings as $booking)
-            <tr style="border-bottom: 1px solid #e9ecef;">
-                <td style="padding: 12px; font-size: 14px;">#{{ $booking->id }}</td>
-                <td style="padding: 12px; font-size: 14px; font-weight: 500;">
-                    {{ $booking->name }}
-                    <br>
-                    <span style="font-size: 12px; color: #666;">{{ ucfirst($booking->gender) }}</span>
-                </td>
-                <td style="padding: 12px; font-size: 13px;">
-                    {{ $booking->email }}<br>
-                    {{ $booking->phone }}
-                </td>
-                <td style="padding: 12px; font-size: 14px; font-weight: 500; color: #28a745;">
-                    {{ $booking->bedspace->unitCode ?? 'N/A' }}
-                </td>
-                <td style="padding: 12px; font-size: 14px;">
-                    {{ \Carbon\Carbon::parse($booking->preferred_date)->format('M d, Y') }}
-                    @if($booking->preferred_time)
-                    <br><span style="font-size: 12px; color: #666;">{{ $booking->preferred_time }}</span>
-                    @endif
-                </td>
-                <td style="padding: 12px; text-align: center;">
-                    <span style="padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase;
-                        {{ $booking->status == 'confirmed' ? 'background-color: #d4edda; color: #155724;' : 
-                           ($booking->status == 'completed' ? 'background-color: #d1ecf1; color: #0c5460;' :
-                           ($booking->status == 'cancelled' ? 'background-color: #f8d7da; color: #721c24;' : 'background-color: #fff3cd; color: #856404;')) }}">
-                        {{ $booking->status }}
-                    </span>
-                </td>
-                <td style="padding: 12px;">
-                    <div style="display: flex; gap: 6px; justify-content: center; align-items: center; flex-wrap: wrap;">
-                        <!-- Edit -->
-                        <a href="{{ route('admin.bookings.edit', $booking->id) }}" 
-                           class="action-icon-btn btn-edit"
-                           data-tooltip="Edit">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                        </a>
-                        
-                        <!-- Confirm (only if pending) -->
-                        @if($booking->status == 'pending')
-                        <button onclick="showConfirmModal({{ $booking->id }}, '{{ $booking->name }}')" 
-                                class="action-icon-btn btn-confirm"
-                                data-tooltip="Confirm">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </button>
-                        @endif
-                        
-                        <!-- Complete (only if confirmed) -->
-                        @if($booking->status == 'confirmed')
-                        <button onclick="showCompleteModal({{ $booking->id }}, '{{ $booking->name }}')" 
-                                class="action-icon-btn btn-complete"
-                                data-tooltip="Mark Complete">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </button>
-                        @endif
-                        
-                        <!-- Cancel (only if not cancelled or completed) -->
-                        @if(!in_array($booking->status, ['cancelled', 'completed']))
-                        <button onclick="showCancelModal({{ $booking->id }}, '{{ $booking->name }}')"
-                                class="action-icon-btn btn-cancel-action"
-                                data-tooltip="Cancel">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                        @endif
-                        
-                        <!-- Delete -->
-                        <button onclick="showDeleteModal({{ $booking->id }}, '{{ $booking->name }}')"
-                                class="action-icon-btn btn-delete"
-                                data-tooltip="Delete">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="7" style="padding: 40px; text-align: center; color: #999;">
-                    No bookings found
-                </td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
 
 <!-- Confirm Modal -->
-<div id="confirmModal" class="modal">
-    <div style="background: white; border-radius: 8px; max-width: 450px; width: 90%; padding: 30px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div style="width: 50px; height: 50px; background-color: #d4edda; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
-                <span style="color: #28a745; font-size: 24px;">✓</span>
+<div id="confirmModal" class="modal-overlay">
+    <div class="bg-white rounded-2xl max-w-md w-11/12 p-8 shadow-2xl">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg width="32" height="32" fill="none" stroke="#22c55e" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
             </div>
-            <h3 style="margin: 0 0 10px 0; font-size: 18px;">Confirm Viewing</h3>
-            <p style="color: #666; margin: 0; font-size: 14px;">
-                Confirm viewing appointment for <strong id="confirmBookingName"></strong>?
-            </p>
+            <h3 class="text-2xl font-bold text-[#135757] mb-2">Confirm Viewing</h3>
+            <p class="text-gray-600">Confirm viewing appointment for <strong id="confirmBookingName" class="text-[#135757]"></strong>?</p>
         </div>
         
-        <form id="confirmForm" method="POST" style="display: flex; gap: 10px;">
+        <form id="confirmForm" method="POST" class="flex gap-3">
             @csrf
             <button type="button" onclick="closeConfirmModal()" 
-                    style="flex: 1; padding: 10px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Close
+                    class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-200">
+                Cancel
             </button>
             <button type="submit" 
-                    style="flex: 1; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    class="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-lg hover:shadow-lg transition duration-200">
                 Confirm
             </button>
         </form>
@@ -381,26 +278,26 @@
 </div>
 
 <!-- Complete Modal -->
-<div id="completeModal" class="modal">
-    <div style="background: white; border-radius: 8px; max-width: 450px; width: 90%; padding: 30px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div style="width: 50px; height: 50px; background-color: #d1ecf1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
-                <span style="color: #17a2b8; font-size: 24px;">✓</span>
+<div id="completeModal" class="modal-overlay">
+    <div class="bg-white rounded-2xl max-w-md w-11/12 p-8 shadow-2xl">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg width="32" height="32" fill="none" stroke="#14b8a6" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
             </div>
-            <h3 style="margin: 0 0 10px 0; font-size: 18px;">Mark as Completed</h3>
-            <p style="color: #666; margin: 0; font-size: 14px;">
-                Mark viewing as completed for <strong id="completeBookingName"></strong>?
-            </p>
+            <h3 class="text-2xl font-bold text-[#135757] mb-2">Mark as Completed</h3>
+            <p class="text-gray-600">Mark viewing as completed for <strong id="completeBookingName" class="text-[#135757]"></strong>?</p>
         </div>
         
-        <form id="completeForm" method="POST" style="display: flex; gap: 10px;">
+        <form id="completeForm" method="POST" class="flex gap-3">
             @csrf
             <button type="button" onclick="closeCompleteModal()" 
-                    style="flex: 1; padding: 10px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Close
+                    class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-200">
+                Cancel
             </button>
             <button type="submit" 
-                    style="flex: 1; padding: 10px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    class="flex-1 px-6 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-lg hover:shadow-lg transition duration-200">
                 Complete
             </button>
         </form>
@@ -408,26 +305,26 @@
 </div>
 
 <!-- Cancel Modal -->
-<div id="cancelModal" class="modal">
-    <div style="background: white; border-radius: 8px; max-width: 450px; width: 90%; padding: 30px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div style="width: 50px; height: 50px; background-color: #fff3cd; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
-                <span style="color: #ffc107; font-size: 24px;">⚠</span>
+<div id="cancelModal" class="modal-overlay">
+    <div class="bg-white rounded-2xl max-w-md w-11/12 p-8 shadow-2xl">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg width="32" height="32" fill="none" stroke="#f59e0b" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
             </div>
-            <h3 style="margin: 0 0 10px 0; font-size: 18px;">Cancel Booking</h3>
-            <p style="color: #666; margin: 0; font-size: 14px;">
-                Cancel the booking for <strong id="cancelBookingName"></strong>?
-            </p>
+            <h3 class="text-2xl font-bold text-[#135757] mb-2">Cancel Booking</h3>
+            <p class="text-gray-600">Cancel the booking for <strong id="cancelBookingName" class="text-[#135757]"></strong>?</p>
         </div>
         
-        <form id="cancelForm" method="POST" style="display: flex; gap: 10px;">
+        <form id="cancelForm" method="POST" class="flex gap-3">
             @csrf
             <button type="button" onclick="closeCancelModal()" 
-                    style="flex: 1; padding: 10px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-200">
                 Close
             </button>
             <button type="submit" 
-                    style="flex: 1; padding: 10px; background-color: #ffc107; color: #333; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                    class="flex-1 px-6 py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-gray-900 font-semibold rounded-lg hover:shadow-lg transition duration-200">
                 Cancel Booking
             </button>
         </form>
@@ -435,29 +332,28 @@
 </div>
 
 <!-- Delete Modal -->
-<div id="deleteModal" class="modal">
-    <div style="background: white; border-radius: 8px; max-width: 450px; width: 90%; padding: 30px;">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div style="width: 50px; height: 50px; background-color: #fee; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
-                <span style="color: #dc3545; font-size: 24px;">🗑️</span>
+<div id="deleteModal" class="modal-overlay">
+    <div class="bg-white rounded-2xl max-w-md w-11/12 p-8 shadow-2xl">
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg width="32" height="32" fill="none" stroke="#dc2626" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
             </div>
-            <h3 style="margin: 0 0 10px 0; font-size: 18px;">Delete Permanently</h3>
-            <p style="color: #666; margin: 0; font-size: 14px;">
-                Permanently delete booking for <strong id="deleteBookingName"></strong>?
-            </p>
-            <p style="color: #dc3545; margin: 10px 0 0 0; font-size: 13px; font-weight: 600;">
-                ⚠️ This action cannot be undone!
-            </p>
+            <h3 class="text-2xl font-bold text-[#135757] mb-2">Delete Permanently</h3>
+            <p class="text-gray-600 mb-4">Permanently delete booking for <strong id="deleteBookingName" class="text-[#135757]"></strong>?</p>
+            <p class="text-red-600 text-sm font-semibold">⚠️ This action cannot be undone!</p>
         </div>
-        <form id="deleteForm" method="POST" style="display: flex; gap: 10px;">
+        
+        <form id="deleteForm" method="POST" class="flex gap-3">
             @csrf
             @method('DELETE')
             <button type="button" onclick="closeDeleteModal()" 
-                    style="flex: 1; padding: 10px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                Close
+                    class="flex-1 px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-200">
+                Cancel
             </button>
             <button type="submit" 
-                    style="flex: 1; padding: 10px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    class="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold rounded-lg hover:shadow-lg transition duration-200">
                 Delete
             </button>
         </form>
@@ -465,7 +361,7 @@
 </div>
 
 <script>
-// Confirm Modal
+// Modal Functions
 function showConfirmModal(id, name) {
     document.getElementById('confirmBookingName').textContent = name;
     document.getElementById('confirmForm').action = `/admin/bookings/${id}/confirm`;
@@ -476,7 +372,6 @@ function closeConfirmModal() {
     document.getElementById('confirmModal').classList.remove('show');
 }
 
-// Complete Modal
 function showCompleteModal(id, name) {
     document.getElementById('completeBookingName').textContent = name;
     document.getElementById('completeForm').action = `/admin/bookings/${id}/complete`;
@@ -487,7 +382,6 @@ function closeCompleteModal() {
     document.getElementById('completeModal').classList.remove('show');
 }
 
-// Cancel Modal
 function showCancelModal(id, name) {
     document.getElementById('cancelBookingName').textContent = name;
     document.getElementById('cancelForm').action = `/admin/bookings/${id}/cancel`;
@@ -498,7 +392,6 @@ function closeCancelModal() {
     document.getElementById('cancelModal').classList.remove('show');
 }
 
-// Delete Modal
 function showDeleteModal(id, name) {
     document.getElementById('deleteBookingName').textContent = name;
     document.getElementById('deleteForm').action = `/admin/bookings/${id}`;
@@ -510,10 +403,19 @@ function closeDeleteModal() {
 }
 
 // Close modals on outside click
-window.onclick = function(event) {
-    if (event.target.classList.contains('modal')) {
-        event.target.classList.remove('show');
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('show');
+        }
+    });
+});
+
+// Close on ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
     }
-}
+});
 </script>
 @endsection
