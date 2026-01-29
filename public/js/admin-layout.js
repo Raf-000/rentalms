@@ -1,7 +1,27 @@
 /* ============================================
    ADMIN LAYOUT SCRIPTS
-   Person 3: You can add interactive features here
    ============================================ */
+
+let sidebarCollapsed = false;
+
+// Toggle sidebar (collapse/expand)
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    
+    sidebarCollapsed = !sidebarCollapsed;
+    
+    if (sidebarCollapsed) {
+        sidebar.classList.add('collapsed');
+        mainContent.classList.add('expanded');
+    } else {
+        sidebar.classList.remove('collapsed');
+        mainContent.classList.remove('expanded');
+    }
+    
+    // Save preference
+    localStorage.setItem('sidebarCollapsed', sidebarCollapsed);
+}
 
 // Toggle dropdown menu
 function toggleDropdown() {
@@ -18,7 +38,14 @@ window.onclick = function(event) {
     }
 }
 
-// Smooth scroll for page transitions (optional - you can remove if not needed)
+// Load sidebar state on page load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Admin layout loaded successfully');
+    
+    // Restore sidebar state
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    if (savedState === 'true') {
+        sidebarCollapsed = false; // Set to false so toggle makes it true
+        toggleSidebar();
+    }
 });

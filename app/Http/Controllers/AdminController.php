@@ -103,25 +103,38 @@ class AdminController extends Controller
             'paymentStatusData' 
         ));
     }
+    
+//================================== User Account Creation ==================================//
     // Show the create account form
     public function showCreateAccount()
     {
-        $bedspaces = Bedspace::where('status', 'available')->get();
+        $bedspaces = Bedspace::where('status', 'available')
+            ->orderBy('houseNo')
+            ->orderBy('floor')
+            ->orderBy('roomNo')
+            ->orderBy('bedspaceNo')
+            ->get();
+        
         return view('admin.create-account', compact('bedspaces'));
     }
 
     // Handle creating the account
     public function createAccount(Request $request)
     {
-        // Validate the input
-        $validated = $request->validate([
+        // Custom validation for lease dates
+        $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:3',
             'role' => 'required|in:admin,tenant',
+            'phone' => 'nullable|string|max:20',
             'bedspace_id' => 'nullable|exists:bedspaces,unitID',
-            'leaseStart' => 'nullable|date',
-            'leaseEnd' => 'nullable|date|after:leaseStart'
+            'leaseStart' => 'nullable|date|required_with:bedspace_id',
+            'leaseEnd' => 'nullable|date|after:leaseStart|required_with:bedspace_id'
+        ], [
+            'leaseEnd.after' => 'The lease end date must be after the lease start date.',
+            'leaseStart.required_with' => 'Lease start date is required when assigning a bedspace.',
+            'leaseEnd.required_with' => 'Lease end date is required when assigning a bedspace.'
         ]);
 
         // Create the user
@@ -130,6 +143,7 @@ class AdminController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'phone' => $request->phone,
             'leaseStart' => $request->leaseStart,
             'leaseEnd' => $request->leaseEnd,
         ]);
@@ -142,18 +156,21 @@ class AdminController extends Controller
             $bedspace->save();
         }
 
-        // Return with user data for the popup
+        // Return with user data for the modal
         return redirect()->route('admin.create-account')->with([
             'success' => true,
             'user' => [
                 'name' => $user->name,
                 'email' => $user->email,
-                'password' => $request->password, // Plain password for display
-                'role' => ucfirst($user->role)
+                'password' => $request->password,
+                'role' => ucfirst($user->role),
+                'bedspace' => $request->bedspace_id ? Bedspace::find($request->bedspace_id)->unitCode : null
             ]
         ]);
     }
 
+//================================== Tenants Management ==================================//
+    //view tenants
     public function viewTenants()
     {
         $tenants = User::where('role', 'tenant')
@@ -163,9 +180,71 @@ class AdminController extends Controller
         return view('admin.view-tenants', compact('tenants'));
     }
 
-    public function deleteTenant($tenantId)
+    //edit tenant account
+    public function editTenant($id)
     {
-        $tenant = User::findOrFail($tenantId);
+        $tenant = User::findOrFail($id);
+        $bedspaces = Bedspace::where('status', 'available')
+            ->orWhere('unitID', $tenant->bedspace?->unitID)
+            ->get();
+        
+        return view('admin.edit-tenant', compact('tenant', 'bedspaces'));
+    }
+
+    public function updateTenant(Request $request, $id)
+    {
+        $tenant = User::findOrFail($id);
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'phone' => 'nullable|string|max:20',
+            'emergencyContact' => 'nullable|string|max:20',
+            'bedspace_id' => 'nullable|exists:bedspaces,unitID',
+            'leaseStart' => 'nullable|date',
+            'leaseEnd' => 'nullable|date|after:leaseStart',
+            'password' => 'nullable|min:3'
+        ]);
+        
+        // Handle bedspace change
+        $oldBedspace = $tenant->bedspace;
+        
+        // Free old bedspace if changing
+        if ($oldBedspace && $oldBedspace->unitID != $request->bedspace_id) {
+            $oldBedspace->tenantID = null;
+            $oldBedspace->status = 'available';
+            $oldBedspace->save();
+        }
+        
+        // Update tenant
+        $tenant->name = $request->name;
+        $tenant->email = $request->email;
+        $tenant->phone = $request->phone;
+        $tenant->emergencyContact = $request->emergencyContact;
+        $tenant->leaseStart = $request->leaseStart;
+        $tenant->leaseEnd = $request->leaseEnd;
+        
+        if ($request->filled('password')) {
+            $tenant->password = Hash::make($request->password);
+        }
+        
+        $tenant->save();
+        
+        // Assign new bedspace
+        if ($request->bedspace_id) {
+            $newBedspace = Bedspace::find($request->bedspace_id);
+            $newBedspace->tenantID = $tenant->id;
+            $newBedspace->status = 'occupied';
+            $newBedspace->save();
+        }
+        
+        return redirect()->route('admin.view-tenants');
+    }
+
+    //delete tenant account
+    public function deleteTenant($id)
+    {
+        $tenant = User::findOrFail($id);
         
         // Free up the bedspace if assigned
         if ($tenant->bedspace) {
@@ -175,12 +254,19 @@ class AdminController extends Controller
             $bedspace->save();
         }
         
-        // Delete the tenant (bills, payments, maintenance will be kept for records)
+        // Delete related records
+        \App\Models\Bill::where('tenantID', $id)->delete();
+        \App\Models\Payment::where('tenantID', $id)->delete();
+        \App\Models\MaintenanceRequest::where('tenantID', $id)->delete();
+        
+        // Delete the tenant
         $tenant->delete();
         
-        return redirect()->route('admin.view-tenants')->with('success', 'Tenant deleted successfully');
+        return redirect()->route('admin.view-tenants');
     }
 
+
+    
     public function showIssueBill()
     {
         $tenants = User::where('role', 'tenant')->with('bedspace')->get();

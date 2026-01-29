@@ -7,10 +7,6 @@ use Illuminate\Support\Facades\Route;
 // PUBLIC ROUTES
 // ============================================
 
-// ============================================
-// PUBLIC ROUTES
-// ============================================
-
 Route::get('/', function () {
     return view('homepage');
 });
@@ -48,9 +44,17 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // View Tenants
     Route::get('/view-tenants', [App\Http\Controllers\AdminController::class, 'viewTenants'])
         ->name('view-tenants');
-    // View Tenants
-    Route::get('/view-tenants', [App\Http\Controllers\AdminController::class, 'viewTenants'])
-        ->name('view-tenants');
+
+    // Edit Tenants
+    Route::get('/tenants/{id}/edit', [App\Http\Controllers\AdminController::class, 'editTenant'])
+        ->name('tenants.edit');
+
+    Route::put('/tenants/{id}', [App\Http\Controllers\AdminController::class, 'updateTenant'])
+        ->name('tenants.update');
+    
+    // Delete Tenant
+    Route::delete('/tenants/{id}', [App\Http\Controllers\AdminController::class, 'deleteTenant'])
+        ->name('tenants.delete');
 
     // Issue Bill
     Route::get('/issue-bill', [App\Http\Controllers\AdminController::class, 'showIssueBill'])
