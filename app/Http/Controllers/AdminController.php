@@ -266,8 +266,9 @@ class AdminController extends Controller
     }
 
 
+//================================== Billing Management ==================================//
     
-    public function showIssueBill()
+    /*public function showIssueBill()
     {
         $tenants = User::where('role', 'tenant')->with('bedspace')->get();
         return view('admin.issue-bill', compact('tenants'));
@@ -289,7 +290,7 @@ class AdminController extends Controller
         ]);
 
         return redirect()->route('admin.issue-bill')->with('success', 'Bill issued successfully!');
-    }
+    } */
 
     // View all bills with filters
     public function viewBills(Request $request)
@@ -331,14 +332,16 @@ class AdminController extends Controller
     public function storeBill(Request $request)
     {
         $validated = $request->validate([
-            'tenantID' => 'required|exists:users,id',
-            'amount' => 'required|numeric|min:0',
-            'description' => 'nullable|string|max:500',
-            'dueDate' => 'required|date',
-            'status' => 'required|in:pending,paid,verified,rejected,void'
-        ]);
-        
-        Bill::create($validated);
+        'tenantID' => 'required|exists:users,id',
+        'amount' => 'required|numeric|min:0',
+        'description' => 'nullable|string|max:500',
+        'dueDate' => 'required|date',
+        'status' => 'required|in:pending,paid,verified,rejected'
+    ]);
+
+    $validated['description'] = $validated['description'] ?? 'Monthly Rent';
+
+    Bill::create($validated);
         
         return redirect()->route('admin.bills.index')
             ->with('success', 'Bill issued successfully!');
@@ -357,39 +360,45 @@ class AdminController extends Controller
     public function updateBill(Request $request, $billID)
     {
         $bill = Bill::findOrFail($billID);
-        
+
         $validated = $request->validate([
-            'tenantID' => 'required|exists:users,id',
             'amount' => 'required|numeric|min:0',
-            'description' => 'nullable|string|max:500',
             'dueDate' => 'required|date',
-            'status' => 'required|in:pending,paid,verified,rejected,void'
+            'status' => 'required|in:pending,paid,verified,rejected'
         ]);
-        
+
         $bill->update($validated);
-        
+
         return redirect()->route('admin.bills.index')
             ->with('success', 'Bill updated successfully!');
     }
 
-    // Void bill (soft delete)
-    public function voidBill($billID)
+    // Hard delete bill
+    public function deleteBill($billID)
     {
         $bill = Bill::findOrFail($billID);
-        
-        // Mark as void instead of deleting
-        $bill->update(['status' => 'void']);
-        
+
+        // Optional safety: prevent deleting bills with verified payments
+        if ($bill->payments()->where('status', 'verified')->exists()) {
+            return redirect()->back()
+                ->with('error', 'Cannot delete a bill with verified payments.');
+        }
+
+        $bill->delete();
+
         return redirect()->route('admin.bills.index')
-            ->with('success', 'Bill voided successfully!');
+            ->with('success', 'Bill deleted successfully!');
     }
 
+    // AJAX: Get bills for a tenant
     public function getTenantBills($tenantId)
     {
         $bills = Bill::where('tenantID', $tenantId)->get();
         return response()->json($bills);
     }
 
+//================================== Payment Verification ==================================//
+    //view payments pending verification
     public function viewPayments()
     {
         $payments = Payment::with(['bill', 'tenant'])
@@ -400,6 +409,7 @@ class AdminController extends Controller
         return view('admin.view-payments', compact('payments'));
     }
 
+    // AJAX: Verify payment
     public function verifyPaymentAjax(Payment $payment)
     {
         try {

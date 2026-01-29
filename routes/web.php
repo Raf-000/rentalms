@@ -56,12 +56,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::delete('/tenants/{id}', [App\Http\Controllers\AdminController::class, 'deleteTenant'])
         ->name('tenants.delete');
 
-    // Issue Bill
-    Route::get('/issue-bill', [App\Http\Controllers\AdminController::class, 'showIssueBill'])
-        ->name('issue-bill');
-    Route::post('/issue-bill', [App\Http\Controllers\AdminController::class, 'issueBill'])
-        ->name('store-bill');
-
     // Bills CRUD
     Route::get('/bills', [App\Http\Controllers\AdminController::class, 'viewBills'])
         ->name('bills.index');
@@ -73,8 +67,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('bills.edit');
     Route::put('/bills/{billID}', [App\Http\Controllers\AdminController::class, 'updateBill'])
         ->name('bills.update');
-    Route::delete('/bills/{billID}', [App\Http\Controllers\AdminController::class, 'voidBill'])
-        ->name('bills.void');
+    Route::delete('/admin/bills/{billID}', [App\Http\Controllers\AdminController::class, 'deleteBill'])
+        ->name('admin.bills.delete');
 
     // View Payments
     Route::get('/view-payments', [App\Http\Controllers\AdminController::class, 'viewPayments'])

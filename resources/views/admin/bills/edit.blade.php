@@ -1,95 +1,82 @@
 @extends('layouts.admin-layout')
 
 @section('content')
-<div class="content-header">
-    <h1>Edit Bill</h1>
-    <p>Edit an existing bill for a tenant</p>
-</div>
+<div class="min-h-screen bg-gradient-to-br from-[#f6f8f7]/80 to-[#E2E8E7]/80 py-8 px-4">
+    <div class="max-w-3xl mx-auto">
 
-<div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px;">
-    <form method="POST" action="{{ route('admin.bills.update', $bill->billID) }}">
-        @csrf
-        @method('PUT')
-
-        <!-- Tenant Selection -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Select Tenant *</label>
-            <select name="tenantID" required
-                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                <option value="">Choose a tenant</option>
-                @foreach($tenants as $tenant)
-                    <option value="{{ $tenant->id }}" 
-                        {{ old('tenantID', $bill->tenantID) == $tenant->id ? 'selected' : '' }}>
-                        {{ $tenant->name }} - {{ $tenant->bedspace?->unitCode ?? 'No bedspace' }}
-                    </option>
-                @endforeach
-            </select>
-            @error('tenantID')
-                <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-            @enderror
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-[#135757] mb-2">Edit Bill</h1>
+            <p class="text-gray-600">Update bill details</p>
         </div>
 
-        <!-- Amount -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Amount *</label>
-            <input type="number" name="amount" step="0.01" min="0" 
-                   value="{{ old('amount', $bill->amount) }}" required
-                   placeholder="0.00"
-                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-            @error('amount')
-                <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-            @enderror
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border-l-4 border-teal-800">
+            <div class="p-8">
+                <form method="POST" action="{{ route('admin.bills.update', $bill->billID) }}">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="space-y-6">
+
+                        <!-- Tenant (read-only) -->
+                        <div>
+                            <label class="block text-sm font-semibold text-[#333] mb-2">
+                                Tenant
+                            </label>
+                            <input
+                                type="text"
+                                value="{{ $bill->tenant->name }}"
+                                disabled
+                                class="w-full px-4 py-3 bg-gray-100 border-2 border-gray-200 rounded-lg text-gray-600 cursor-not-allowed"
+                            >
+                        </div>
+
+                        <!-- Amount -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Amount</label>
+                            <input type="number" name="amount" step="0.01"
+                                value="{{ old('amount', $bill->amount) }}"
+                                class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg">
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label class="block text-sm font-semibold mb-2">Description</label>
+                            <textarea name="description" rows="3"
+                                class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg">{{ old('description', $bill->description) }}</textarea>
+                        </div>
+
+                        <!-- Due Date + Status -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <input type="date" name="dueDate"
+                                value="{{ old('dueDate', $bill->dueDate->format('Y-m-d')) }}"
+                                class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg">
+
+                            <select name="status"
+                                class="w-full px-4 py-3 border-2 border-[#E2E8E7] rounded-lg bg-white">
+                                @foreach(['pending','paid','verified'] as $s)
+                                    <option value="{{ $s }}" {{ $bill->status === $s ? 'selected' : '' }}>
+                                        {{ ucfirst($s) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex gap-4 pt-4">
+                            <a href="{{ route('admin.bills.index') }}"
+                               class="flex-1 text-center py-4 rounded-lg bg-gray-200 text-gray-700 font-semibold">
+                                Cancel
+                            </a>
+                            <button class="flex-1 py-4 rounded-lg bg-gradient-to-r from-[#135757] to-[#1a7272] text-white font-semibold">
+                                Save Changes
+                            </button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <!-- Description -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Description (Optional)</label>
-            <textarea name="description" rows="3"
-                      placeholder="E.g., Monthly rent, Penalty for late payment, Broken window repair..."
-                      style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial, sans-serif; font-size: 14px;">{{ old('description', $bill->description) }}</textarea>
-            @error('description')
-                <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-            @enderror
-            <p style="font-size: 12px; color: #666; margin-top: 5px;">Leave blank for regular monthly rent</p>
-        </div>
-
-        <!-- Due Date -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Due Date *</label>
-            <input type="date" name="dueDate" 
-                   value="{{ old('dueDate', $bill->dueDate ? $bill->dueDate->format('Y-m-d') : date('Y-m-d')) }}" required
-                   style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-            @error('dueDate')
-                <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <!-- Status -->
-        <div style="margin-bottom: 30px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Status *</label>
-            <select name="status" required
-                    style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
-                <option value="pending" {{ old('status', $bill->status) == 'pending' ? 'selected' : '' }}>Pending</option>
-                <option value="paid" {{ old('status', $bill->status) == 'paid' ? 'selected' : '' }}>Paid</option>
-                <option value="verified" {{ old('status', $bill->status) == 'verified' ? 'selected' : '' }}>Verified</option>
-                <option value="void" {{ old('status', $bill->status) == 'void' ? 'selected' : '' }}>Void</option>
-            </select>
-            @error('status')
-                <p style="color: #dc3545; font-size: 13px; margin-top: 5px;">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <!-- Buttons -->
-        <div style="display: flex; gap: 10px;">
-            <a href="{{ route('admin.bills.index') }}" 
-               style="flex: 1; padding: 12px; background-color: #6c757d; color: white; border: none; border-radius: 6px; text-decoration: none; text-align: center; font-size: 15px;">
-                Cancel
-            </a>
-            <button type="submit" 
-                    style="flex: 1; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 15px;">
-                Update Bill
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
 @endsection

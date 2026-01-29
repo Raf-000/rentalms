@@ -93,14 +93,14 @@ body.modal-open {
 }
 
 .tenants-table thead {
-    background: #f6f8f7;
+    background: #135757;
 }
 
 .tenants-table th {
     padding: 16px;
     text-align: left;
     font-weight: 700;
-    color: #135757;
+    color: white;
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;

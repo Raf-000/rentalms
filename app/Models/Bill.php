@@ -17,7 +17,7 @@ class Bill extends Model
         'status'
     ];
 
-    protected $casts = [ 'dueDate' => 'date', // 👈 this makes $bill->dueDate a Carbon instance 
+    protected $casts = [ 'dueDate' => 'date',
     ];
 
     public function tenant()
