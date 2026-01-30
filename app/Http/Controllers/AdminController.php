@@ -378,8 +378,8 @@ class AdminController extends Controller
     {
         $bill = Bill::findOrFail($billID);
 
-        // Optional safety: prevent deleting bills with verified payments
-        if ($bill->payments()->where('status', 'verified')->exists()) {
+        // Prevent deleting bills with verified payments
+        if ($bill->payments()->whereNotNull('verifiedAt')->exists()) {
             return redirect()->back()
                 ->with('error', 'Cannot delete a bill with verified payments.');
         }

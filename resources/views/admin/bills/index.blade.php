@@ -162,43 +162,44 @@
     </div>
 </div>
 
-<!-- Void Modal -->
-<div id="voidModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+<!-- Delete Modal -->
+<div id="deleteModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl p-8 max-w-md w-full">
         <div class="text-center mb-6">
             <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span class="text-red-600 text-2xl">⚠</span>
+                <span class="text-red-600 text-2xl">🗑️</span>
             </div>
-            <h3 class="text-xl font-bold mb-2">Void Bill</h3>
+            <h3 class="text-xl font-bold mb-2">Delete Bill</h3>
             <p class="text-gray-600 text-sm">
-                Are you sure you want to void this bill for <strong id="voidTenantName"></strong>?
+                Are you sure you want to permanently delete this bill for <strong id="deleteTenantName"></strong>?
             </p>
+            <p class="text-red-600 text-xs mt-2 font-semibold">⚠️ This action cannot be undone!</p>
         </div>
 
-        <form id="voidForm" method="POST" class="flex gap-3">
+        <form id="deleteForm" method="POST" class="flex gap-3">
             @csrf
             @method('DELETE')
-            <button type="button" onclick="closeVoidModal()"
+            <button type="button" onclick="closeDeleteModal()"
                     class="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg">
                 Cancel
             </button>
             <button type="submit"
                     class="flex-1 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">
-                Void Bill
+                Delete Bill
             </button>
         </form>
     </div>
 </div>
 
 <script>
-function confirmVoid(id, name) {
-    document.getElementById('voidTenantName').textContent = name;
-    document.getElementById('voidForm').action = `/admin/bills/${id}`;
-    document.getElementById('voidModal').classList.remove('hidden');
+function confirmDelete(id, name) {
+    document.getElementById('deleteTenantName').textContent = name;
+    document.getElementById('deleteForm').action = `/admin/bills/${id}`;
+    document.getElementById('deleteModal').classList.remove('hidden');
 }
 
-function closeVoidModal() {
-    document.getElementById('voidModal').classList.add('hidden');
+function closeDeleteModal() {
+    document.getElementById('deleteModal').classList.add('hidden');
 }
 </script>
 @endsection

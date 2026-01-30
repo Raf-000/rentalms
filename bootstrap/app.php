@@ -10,9 +10,17 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        //
+    ->withMiddleware(function (Middleware $middleware) {
+        // Trust all proxies for ngrok
+        $middleware->trustProxies(at: '*');
+        
+        // Trust ngrok hosts
+        $middleware->trustHosts(at: [
+            'veristic-unangular-criselda.ngrok-free.dev',
+            'localhost',
+            '*.ngrok-free.dev'
+        ]);
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+    ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

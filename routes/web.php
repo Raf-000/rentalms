@@ -67,7 +67,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->name('bills.edit');
     Route::put('/bills/{billID}', [App\Http\Controllers\AdminController::class, 'updateBill'])
         ->name('bills.update');
-    Route::delete('/admin/bills/{billID}', [App\Http\Controllers\AdminController::class, 'deleteBill'])
+    Route::delete('/bills/{billID}', [App\Http\Controllers\AdminController::class, 'deleteBill'])
         ->name('admin.bills.delete');
 
     // View Payments
