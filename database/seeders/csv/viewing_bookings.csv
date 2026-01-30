@@ -1,0 +1,3 @@
+id,name,email,phone,gender,bedspace_id,preferred_date,preferred_time,message,status,created_at,updated_at
+1,James,james@gmail.com,09839398398,male,1,2026-01-22,12:44,im with mom,pending,2026-01-23,2026-02-17
+2,Nadine,nadine@gmail.com,09456673573,female,2,2026-01-27,2:30,n/a,pending,2026-01-30,2026-02-13
