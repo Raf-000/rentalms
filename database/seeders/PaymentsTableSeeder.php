@@ -15,25 +15,30 @@ class PaymentsTableSeeder extends Seeder
         // Skip header row
         $header = fgetcsv($file);
 
-        while (($row = fgetcsv($file)) !== false) {
+        while (($row = fgetcsv($file, 0, ',', '"')) !== false) {
+            // Ensure the row always has 11 columns
+            $row = array_pad($row, 11, null);
+
             DB::table('payments')->insert([
-                'paymentID' => $row[0],
-                'billID' => $row[1],
-                'tenantID' => $row[2],
-                'receiptImage' => $row[3],
-                'paymentMethod' => $row[4],
-                'paidAt' => $row[5],
-                'verifiedBy' => $row[6],
-                'verifiedAt' => $row[7],
-                'created_at' => $row[8],
-                'updated_at' => $row[9],
-                'rejectionreason' => $row[10], 
-                'created_at' => $row[11],
-                'updated_at' => $row[12],
+                'paymentID'       => (int) $row[0],
+                'billID'          => (int) $row[1],
+                'tenantID'        => (int) $row[2],
+                'receiptImage'    => $this->nullIfBlank($row[3]),
+                'paymentMethod'   => $row[4],
+                'paidAt'          => $this->nullIfBlank($row[5]),
+                'verifiedBy'      => $this->nullIfBlank($row[6]),
+                'verifiedAt'      => $this->nullIfBlank($row[7]),
+                'rejectionReason' => $this->nullIfBlank($row[8]),
+                'created_at'      => $row[9],
+                'updated_at'      => $row[10],
             ]);
         }
 
         fclose($file);
     }
-}
 
+    private function nullIfBlank($value)
+    {
+        return ($value === '' || $value === null) ? null : $value;
+    }
+}

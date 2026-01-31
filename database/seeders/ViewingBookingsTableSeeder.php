@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class ViewingBookingsTableSeeder extends Seeder
 {
@@ -17,28 +16,30 @@ class ViewingBookingsTableSeeder extends Seeder
         $header = fgetcsv($file);
 
         while (($row = fgetcsv($file, 0, ',', '"')) !== false) {
-            // Ensure the row always has 11 columns
-            $row = array_pad($row, 11, null);
-
-            $dueDate = date('Y-m-d', strtotime($row[3]));
-            $createdAt = date('Y-m-d H:i:s', strtotime($row[5]));
-            $updatedAt = date('Y-m-d H:i:s', strtotime($row[6]));
+            // Ensure the row always has 12 columns
+            $row = array_pad($row, 12, null);
 
             DB::table('viewing_bookings')->insert([
-                'id'               => $row[0],
-                'name'             => $row[1],
-                'email'            => $row[2],
-                'password'         => $row[3],
-                'phone'            => $row[4],
-                'role'             => $row[5],
-                'emergencyContact' => $row[6] !== '' ? $row[6] : null,
-                'leaseStart'       => $row[7] !== '' ? $row[7] : null,
-                'leaseEnd'         => $row[8] !== '' ? $row[8] : null,
-                'created_at'       => $row[9],
-                'updated_at'       => $row[10],
+                'id'             => (int) $row[0],
+                'name'           => $row[1],
+                'email'          => $row[2],
+                'phone'          => $row[3],
+                'gender'         => $row[4],
+                'bedspace_id'    => $this->nullIfBlank($row[5]),
+                'preferred_date' => $this->nullIfBlank($row[6]),
+                'preferred_time' => $this->nullIfBlank($row[7]),
+                'message'        => $this->nullIfBlank($row[8]),
+                'status'         => $row[9],
+                'created_at'     => $row[10],
+                'updated_at'     => $row[11],
             ]);
         }
 
         fclose($file);
+    }
+
+    private function nullIfBlank($value)
+    {
+        return ($value === '' || $value === null) ? null : $value;
     }
 }

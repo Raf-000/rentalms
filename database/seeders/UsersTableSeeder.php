@@ -21,20 +21,25 @@ class UsersTableSeeder extends Seeder
             $row = array_pad($row, 11, null);
 
             DB::table('users')->insert([
-                'id'               => $row[0],
+                'id'               => (int) $row[0],
                 'name'             => $row[1],
                 'email'            => $row[2],
                 'password'         => Hash::make($row[3]),
                 'phone'            => $row[4],
                 'role'             => $row[5],
-                'emergencyContact' => $row[6] !== '' ? $row[6] : null,
-                'leaseStart'       => $row[7] !== '' ? $row[7] : null,
-                'leaseEnd'         => $row[8] !== '' ? $row[8] : null,
-                'created_at'       => $row[9],
-                'updated_at'       => $row[10],
+                'emergencyContact' => $this->nullIfBlank($row[6]),
+                'leaseStart'       => $this->nullIfBlank($row[7]),
+                'leaseEnd'         => $this->nullIfBlank($row[8]),
+                'created_at'       => $this->nullIfBlank($row[9]),
+                'updated_at'       => $this->nullIfBlank($row[10]),
             ]);
         }
 
         fclose($file);
+    }
+
+    private function nullIfBlank($value)
+    {
+        return ($value === '' || $value === null || strtoupper($value) === 'NULL') ? null : $value;
     }
 }

@@ -15,30 +15,31 @@ class BedspacesTableSeeder extends Seeder
         // Skip header row
         $header = fgetcsv($file);
 
-        while (($row = fgetcsv($file)) !== false) {
-
-            $tenantID = trim($row[7]) === '' ? null : (int) $row[7];
-
-            $createdAt = date('Y-m-d H:i:s', strtotime($row[10]));
-            $updatedAt = date('Y-m-d H:i:s', strtotime($row[11]));
+        while (($row = fgetcsv($file, 0, ',', '"')) !== false) {
+            // Ensure the row always has 12 columns
+            $row = array_pad($row, 12, null);
 
             DB::table('bedspaces')->insert([
-                'unitID' => (int) $row[0],
-                'unitCode' => $row[1],
-                'houseNo' => (int) $row[2],
-                'floor' => (int) $row[3],
-                'roomNo' => $row[4],
-                'price' => (float) $row[5],
-                'restriction' => $row[6],  
-                'tenantID' => $tenantID,   
+                'unitID'     => (int) $row[0],
+                'unitCode'   => $row[1],
+                'houseNo'    => (int) $row[2],
+                'floor'      => (int) $row[3],
+                'roomNo'     => $row[4],
+                'price'      => (float) $row[5],
+                'restriction'=> $row[6],
+                'tenantID'   => $this->nullIfBlank($row[7]) ? (int) $row[7] : null,
                 'bedspaceNo' => (int) $row[8],
-                'status' => $row[9],
-                'created_at' => $createdAt, 
-                'updated_at' => $updatedAt, 
+                'status'     => $row[9],
+                'created_at' => $this->nullIfBlank($row[10]),
+                'updated_at' => $this->nullIfBlank($row[11]),
             ]);
         }
 
         fclose($file);
     }
-}
 
+    private function nullIfBlank($value)
+    {
+        return ($value === '' || $value === null) ? null : $value;
+    }
+}
