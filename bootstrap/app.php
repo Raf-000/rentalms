@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'localhost',
             '*.ngrok-free.dev'
         ]);
+        
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
