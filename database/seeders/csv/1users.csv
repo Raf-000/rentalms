@@ -1,5 +1,5 @@
 id,name,email,password,phone,role,emergencyContact,leaseStart,leaseEnd,created_at,updated_at
-101,Admin Ako,unocutie.gmail.com,123,9123456789,admin,,,,2026-01-20 09:15:32,2026-01-20 09:15:32
+101,Admin Ako,unocutie@gmail.com,123,9123456789,admin,,,,2026-01-20 09:15:32,2026-01-20 09:15:32
 102,Izumi,izumi@gmail.com,luc,9847562013,admin,,,,2026-01-20 14:42:10,2026-01-20 18:05:47
 103,John Jaranjan,jj007@gmail.com,jjj,9356891247,admin,,,,2026-01-20 19:03:55,2026-01-21 08:20:18
 104,Alex Santos,alexsantos1@gmail.com,221,9628374951,tenant,9847562013,2025-01-01,2025-12-31,2026-01-21 07:25:44,2026-01-21 07:25:44
